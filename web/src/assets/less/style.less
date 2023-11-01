@@ -5,6 +5,7 @@ body, #app {
 .ant-layout-header {
   width: 100%;
   position: fixed;
+  z-index: 99;
 }
 
 main.ant-layout-content {
@@ -14,8 +15,12 @@ main.ant-layout-content {
   background-color: #fff;
 }
 
-.new-hook {
+.viewport {
   margin-top: 24px;
+  padding-bottom: 50px;
+}
+
+.new-hook {
   text-align: right;
 }
 
@@ -28,4 +33,48 @@ main.ant-layout-content {
   &:hover {
     box-shadow: 0 3px 3px rgba(56, 65, 74, .1);;
   }
+}
+
+.trigger-group {
+  border: 1px dashed #1677ff;
+  border-radius: 3px;
+  padding: 10px;
+
+  .add-more {
+    opacity: 0;
+  }
+
+  &:hover > .add-more {
+    opacity: 1;
+  }
+}
+
+.action-item {
+  border: 1px solid #299cdb;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.txt-center {
+  text-align: center;
+}
+
+.float-rgt {
+  float: right;
+}
+
+.step-btn {
+  margin-top: 12px;
+}
+
+.mini-back-btn {
+  font-size: 20px;
+}
+
+.no-margin {
+  margin: 0 !important;
+}
+
+.ant-select {
+  min-width: 120px;
 }
