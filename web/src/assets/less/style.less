@@ -29,9 +29,18 @@ main.ant-layout-content {
   padding: 24px 10px;
   border: 1px solid #eff2f7;
   border-radius: 5px;
+  background-color: #eff2f7;
 
   &:hover {
-    box-shadow: 0 3px 3px rgba(56, 65, 74, .1);;
+    box-shadow: 0 3px 3px rgba(56, 65, 74, .1);
+
+    .actions {
+      opacity: 1;
+    }
+  }
+
+  .actions {
+    opacity: 0;
   }
 }
 
@@ -75,6 +84,26 @@ main.ant-layout-content {
   margin: 0 !important;
 }
 
-.ant-select {
-  min-width: 120px;
+.no-margin-rgt {
+  margin-right: 0 !important;
 }
+
+.margin-lft {
+  margin-left: 12px !important;
+}
+
+.ant-select {
+  min-width: 150px;
+}
+
+.anticon[color=primary] {
+  color: #00b96b;
+  fill: #00b96b;
+}
+
+.anticon[color=blue] {
+  color: #299cdb;
+  fill: #299cdb;
+}
+
+

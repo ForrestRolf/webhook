@@ -1,11 +1,11 @@
 import axios from 'axios'
-import {computed, ref} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import useMessage from "./message.js"
 
 const instance = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "/",
     timeout: 1000 * 60,
-    withCredentials: true,
+    withCredentials: false,
 })
 const beforeRequest = config => {
     config.headers['Content-Type'] = 'application/json'
@@ -52,7 +52,7 @@ const onError = (errorMessageHandle) => {
 
 instance.interceptors.request.use(beforeRequest)
 
-function Http(instance, url, method, errorMessageHandle) {
+function Http(instance, url, method) {
     this.instance = instance
     this.url = url
     this.method = method
@@ -60,10 +60,8 @@ function Http(instance, url, method, errorMessageHandle) {
     this.body = null
     this.query = null
     this.pathVariables = null
-    this.errorMessageHandle = errorMessageHandle
     this.auth = null
     this.proxy = null
-    this.instance.interceptors.response.use(onSuccess(this.errorMessageHandle), onError(this.errorMessageHandle))
 }
 
 Http.prototype.withUrl = function (url) {
@@ -140,18 +138,33 @@ export default function useAxios() {
         return showGlobalMessage.value ? errorMessage : () => {
         }
     })
+    const interceptor = ref()
+    const registerInterceptor = () => {
+        interceptor.value = instance.interceptors.response.use(onSuccess(errorMessageHandle.value), onError(errorMessageHandle.value))
+        return interceptor.value
+    }
+
+    watch(errorMessageHandle, () => {
+        instance.interceptors.response.eject(interceptor.value)
+        registerInterceptor()
+    }, {
+        immediate: true
+    })
+    onUnmounted(() => {
+        instance.interceptors.response.eject(interceptor.value)
+    })
 
     const httpGet = (url) => {
-        return new Http(instance, url, 'GET', errorMessageHandle.value)
+        return new Http(instance, url, 'GET')
     }
     const httpPost = (url) => {
-        return new Http(instance, url, 'POST', errorMessageHandle.value)
+        return new Http(instance, url, 'POST')
     }
     const httpPut = (url) => {
-        return new Http(instance, url, "PUT", errorMessageHandle.value)
+        return new Http(instance, url, "PUT")
     }
     const httpDelete = (url) => {
-        return new Http(instance, url, "DELETE", errorMessageHandle.value)
+        return new Http(instance, url, "DELETE")
     }
 
     const disableGlobalMessage = () => {

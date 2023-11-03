@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import {DeleteOutlined} from "@ant-design/icons-vue"
+import argumentSources from "../../support/argument-source.js";
 
 const props = defineProps({
     trigger: {
@@ -36,7 +37,7 @@ const handleRemove = () => {
     <a-space>
         <div>IF</div>
         <a-select v-model:value="trigger.match.parameter.source" :disabled="props.disabled">
-            <a-select-option value="payload">Payload</a-select-option>
+            <a-select-option :value="src.name" v-for="src in argumentSources">{{ src.label }}</a-select-option>
         </a-select>
         <a-input v-model:value="trigger.match.parameter.name" :disabled="props.disabled"></a-input>
 

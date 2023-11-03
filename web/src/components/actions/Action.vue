@@ -40,12 +40,14 @@ const handleRemove = (idx) => {
 const addAction = () => {
     actions.value.push({
         "driver": "shell",
+        "attributes": {}
     })
     emit("update:actions", actions.value)
 }
 const addOtherAction = (k) => {
     actions.value.push({
         "driver": "http",
+        "attributes": {}
     })
     emit("update:actions", actions.value)
 }
@@ -59,7 +61,7 @@ const addOtherAction = (k) => {
                     <DeleteOutlined/>
                 </template>
             </a-button>
-            <component :is="components[action.driver]" :disabled="props.disabled"></component>
+            <component :is="components[action.driver]" :disabled="props.disabled" v-model:attributes="actions[i].attributes"></component>
             <a-divider v-show="i < actions.length - 1">
                 <ArrowDownOutlined/>
             </a-divider>

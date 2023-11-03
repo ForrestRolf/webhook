@@ -2,49 +2,24 @@ package main
 
 import (
 	"fmt"
-	"os"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
+	"os"
+	"webhook/src/support"
 )
 
-var logger = logrus.New()
-
-var logLevelMap = map[string]logrus.Level{
-	"trace": logrus.TraceLevel,
-	"debug": logrus.DebugLevel,
-	"info":  logrus.InfoLevel,
-	"warn":  logrus.WarnLevel,
-	"error": logrus.ErrorLevel,
-}
-
-type arguments struct {
-	LogLevel       string
-	BindAddress    string
-	BindPort       int
-	StaticContents string
-}
-
-func runServer(args arguments) error {
-	level, ok := logLevelMap[args.LogLevel]
-	if !ok {
-		return fmt.Errorf("Invalid log level: %s", args.LogLevel)
+func runServer(args support.Arguments) error {
+	if args.LogLevel != "debug" && args.LogLevel != "trace" {
+		gin.SetMode(gin.ReleaseMode)
 	}
-	logger.SetLevel(level)
-	logger.SetFormatter(&logrus.JSONFormatter{})
-
-	logger.WithFields(logrus.Fields{
-		"args": args,
-	}).Info("Given options")
-
-	r := gin.Default()
-
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.Use(support.LoggingMiddleware())
+	r.Use(cors.Default())
 	r.Use(static.Serve("/", static.LocalFile(args.StaticContents, false)))
-	r.GET("/api/v1/hello", func(c *gin.Context) {
-		c.String(200, `{"message":"hello, hello, hello"}`)
-	})
+	support.Setup(r, &args)
 
 	if err := r.Run(fmt.Sprintf("%s:%d", args.BindAddress, args.BindPort)); err != nil {
 		return err
@@ -54,7 +29,7 @@ func runServer(args arguments) error {
 }
 
 func main() {
-	var args arguments
+	var args support.Arguments
 
 	app := cli.NewApp()
 	app.Name = "webhook"
@@ -71,7 +46,7 @@ func main() {
 			Destination: &args.BindAddress,
 		},
 		cli.IntFlag{
-			Name: "port, p", Value: 9080,
+			Name: "port, p", Value: 9000,
 			Usage:       "Bind port",
 			Destination: &args.BindPort,
 		},
@@ -79,6 +54,16 @@ func main() {
 			Name: "static, s", Value: "./static/",
 			Usage:       "Static contents path",
 			Destination: &args.StaticContents,
+		},
+		cli.StringFlag{
+			Name: "uri", Value: "",
+			Usage:       "MongoDB connection uri. eg. mongodb://username:password@localhost:27017/webhook",
+			Destination: &args.MongoConnectionUri,
+			Required:    true,
+		},
+		cli.StringFlag{
+			Name: "db", Value: "webhook",
+			Destination: &args.Database,
 		},
 	}
 
@@ -90,6 +75,6 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		logger.WithError(err).Fatal("Fatal Error")
+		panic("Fatal Error")
 	}
 }

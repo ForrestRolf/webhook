@@ -1,11 +1,16 @@
 <script setup>
-import {LeftCircleOutlined} from "@ant-design/icons-vue"
+import {LeftCircleOutlined, PlusCircleOutlined} from "@ant-design/icons-vue"
 import {useRouter} from "vue-router";
 import TriggerGroup from "../components/triggers/TriggerGroup.vue";
-import {ref, watch} from "vue";
+import {reactive, ref, watch} from "vue";
 import Action from "../components/actions/Action.vue";
+import useAxios from "../support/axios.js";
+import PassArgument from "../components/PassArgument.vue";
+import useMessage from "../support/message.js";
 
 const router = useRouter()
+const {httpPost} = useAxios()
+const {successMessage} = useMessage()
 
 const currentStep = ref("basic")
 const steps = ref(["basic", "triggers", "actions"])
@@ -26,70 +31,75 @@ const handlePrevStep = () => {
     currentStep.value = steps.value[idx - 1]
 }
 
+const formState = reactive({
+    name: null,
+    description: null,
+    triggers: {},
+    actions: [],
+    pass_arguments_to_action: []
+})
+
 const triggers = ref({
     "and": [
         {
             "match": {
                 "parameter": {
                     "source": "payload",
-                    "name": "X-Hub-Signature"
-                },
-                "type": "regex",
-                "regex": "mysecret"
-            }
-        },
-        {
-            "or": [
-                {
-                    "match":
-                        {
-                            "parameter":
-                                {
-                                    "source": "payload",
-                                    "name": "ref"
-                                },
-                            "type": "value",
-                            "value": "refs/heads/master"
-                        }
-                },
-                {
-                    "match":
-                        {
-                            "parameter":
-                                {
-                                    "source": "payload",
-                                    "name": "X-GitHub-Event"
-                                },
-                            "type": "value",
-                            "value": "ping"
-                        }
-                }
-            ]
-        },
-        {
-            "match": {
-                "parameter": {
-                    "source": "payload",
-                    "name": "X-Hub-Signature"
+                    "name": ""
                 },
                 "type": "value",
-                "value": "mysecret"
+                "value": ""
             }
-        },
+        }
     ]
 })
 
 const actions = ref([
     {
         "driver": "shell",
-    },
-    {
-        "driver": "http",
+        "attributes": {}
     }
 ])
 
+const argument = ref([
+
+])
+const loading = ref(false)
+
+const handleSave = () => {
+    loading.value = true
+    httpPost("/webhook").withBody(formState).exec().then(({payload, meta}) => {
+        loading.value = false
+        successMessage("Webhook created", payload.name).show()
+        backToHome()
+    }).catch(err => {
+        loading.value = false
+    })
+}
+
+const addArgument = () => {
+    argument.value.push({
+        source: "payload",
+        value: "",
+        envname: "",
+    })
+}
+const handleRemoveArgument = (i) => {
+    argument.value.splice(i, 1)
+}
+
 watch(triggers, () => {
-    console.log(triggers.value)
+    formState.triggers = triggers.value
+}, {
+    deep: true
+})
+watch(actions, () => {
+    formState.actions = actions.value
+}, {
+    deep: true
+})
+watch(argument, () => {
+    formState.pass_arguments_to_action = argument.value
 }, {
     deep: true
 })
@@ -109,10 +119,10 @@ watch(triggers, () => {
             <a-card title="Basic">
                 <a-form :label-col="{ span: 6 }">
                     <a-form-item label="Name">
-                        <a-input :disabled="!stepVisible('basic')" ></a-input>
+                        <a-input :disabled="!stepVisible('basic')" v-model:value="formState.name" ></a-input>
                     </a-form-item>
                     <a-form-item label="Description">
-                        <a-textarea :rows="4" :disabled="!stepVisible('basic')"></a-textarea>
+                        <a-textarea :rows="4" :disabled="!stepVisible('basic')" v-model:value="formState.description"></a-textarea>
                     </a-form-item>
                 </a-form>
             </a-card>
@@ -125,6 +135,22 @@ watch(triggers, () => {
                 <TriggerGroup v-model:triggers="triggers" :disabled="!stepVisible('triggers')">
 
                 </TriggerGroup>
+            </a-card>
+            <br/>
+            <a-card title="Arguments">
+                <a-row :gutter="[12, 12]">
+                    <a-col :span="24" v-for="(arg, i) in argument">
+                        <PassArgument v-model:argument="argument[i]" @remove="handleRemoveArgument(i)"></PassArgument>
+                    </a-col>
+                    <a-col :span="24">
+                        <a-button @click="addArgument">
+                            <template #icon>
+                                <PlusCircleOutlined/>
+                            </template>
+                            Add argument
+                        </a-button>
+                    </a-col>
+                </a-row>
             </a-card>
             <a-space class="float-rgt">
                 <a-button type="default" class="step-btn" v-show="stepVisible('triggers')" @click="handlePrevStep">
@@ -142,7 +168,7 @@ watch(triggers, () => {
             <a-space class="float-rgt">
                 <a-button type="default" class="step-btn" v-show="stepVisible('actions')" @click="handlePrevStep">Prev
                 </a-button>
-                <a-button type="primary" class="step-btn" v-show="stepVisible('actions')">Save</a-button>
+                <a-button type="primary" class="step-btn" v-show="stepVisible('actions')" @click="handleSave" :loading="loading">Save</a-button>
             </a-space>
         </a-col>
     </a-row>
