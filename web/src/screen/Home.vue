@@ -55,6 +55,15 @@ const handleDisableHook = (id) => {
     })
 }
 
+const handleDuplicate = (id) => {
+    loading.duplicate = true
+    httpPost(`/webhook/${id}/duplicate`).exec().then(({payload}) => {
+        fetchWebhooks()
+    }).finally(() => {
+        loading.duplicate = false
+    })
+}
+
 onMounted(() => {
     fetchWebhooks()
 })
@@ -111,7 +120,7 @@ onMounted(() => {
                 <a-space class="actions">
                     <a-button size="small" type="text">
                         <template #icon>
-                            <InfoCircleOutlined />
+                            <InfoCircleOutlined/>
                         </template>
                     </a-button>
                     <a-button size="small" type="text">
@@ -119,7 +128,7 @@ onMounted(() => {
                             <EditOutlined/>
                         </template>
                     </a-button>
-                    <a-button size="small" type="text">
+                    <a-button size="small" type="text" @click="handleDuplicate(hook.id)">
                         <template #icon>
                             <CopyOutlined color="blue"/>
                         </template>

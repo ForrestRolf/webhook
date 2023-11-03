@@ -3,6 +3,7 @@ package handle
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"webhook/src"
 	"webhook/src/model"
@@ -102,6 +103,7 @@ func (w *Webhook) Duplicate(c *gin.Context) {
 		return
 	}
 	webhook.Name = webhook.Name + " Copy"
+	webhook.Id = primitive.NewObjectID()
 
 	if err := w.Model.AddWebhook(&webhook); err != nil {
 		w.Response.Fail(c, err.Error(), nil)
