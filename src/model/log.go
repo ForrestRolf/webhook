@@ -3,8 +3,10 @@ package model
 import (
 	"context"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 	"webhook/src/hook"
 )
@@ -77,4 +79,22 @@ func (l *LogClient) ParseErrors(errors []error) string {
 		e += "," + err.Error()
 	}
 	return e
+}
+
+func (l *LogClient) QueryLogs(id string) ([]Log, error) {
+	logs := make([]Log, 0)
+
+	opts := options.Find().SetSort(bson.D{{"_id", -1}}).SetLimit(2000)
+	filter := bson.D{}
+	if id != "" {
+		filter = bson.D{{"webhookId", id}}
+	}
+	cur, err := l.logCollection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return logs, err
+	}
+	if err = cur.All(context.TODO(), &logs); err != nil {
+		return logs, err
+	}
+	return logs, nil
 }

@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {nextTick, onMounted, ref} from "vue";
 import {
     PlusOutlined,
     EditOutlined,
@@ -14,11 +14,14 @@ import ActionPreview from "../components/actions/ActionPreview.vue";
 import DuplicateIt from "../components/DuplicateIt.vue";
 import DeleteIt from "../components/DeleteIt.vue";
 import EnableOrDisableIt from "../components/EnableOrDisableIt.vue";
+import WebhookLogs from "../components/WebhookLogs.vue";
 
 const router = useRouter()
 const {httpGet} = useAxios()
 
 const hooks = ref([])
+const selectedHook = ref()
+const logs = ref()
 
 const gotoHook = () => {
     router.push({name: "hooks"})
@@ -39,11 +42,18 @@ const copyHookLinkToClipboard = (hook) => {
     hook.copied = true
     navigator.clipboard.writeText(formatHookLink(hook)).then(() => {
 
-    },() => {
+    }, () => {
     })
     setTimeout(() => {
         hook.copied = false
     }, 3000)
+}
+
+const handleSelectHook = (hook) => {
+    selectedHook.value = hook.id
+    nextTick(() => {
+        logs.value.show()
+    })
 }
 
 onMounted(() => {
@@ -72,8 +82,8 @@ onMounted(() => {
                         {{ hook.name }}
                         <a-button size="small" type="text" @click="copyHookLinkToClipboard(hook)">
                             <template #icon>
-                                <CopyOutlined v-show="!hook.copied" />
-                                <CheckOutlined color="success" v-show="hook.copied" />
+                                <CopyOutlined v-show="!hook.copied"/>
+                                <CheckOutlined color="success" v-show="hook.copied"/>
                             </template>
                         </a-button>
                     </a-typography-text>
@@ -97,7 +107,7 @@ onMounted(() => {
             </a-col>
             <a-col :span="2">
                 <a-space class="actions">
-                    <a-button size="small" type="text">
+                    <a-button size="small" type="text" @click="handleSelectHook(hook)">
                         <template #icon>
                             <InfoCircleOutlined/>
                         </template>
@@ -112,6 +122,8 @@ onMounted(() => {
                 </a-space>
             </a-col>
         </a-row>
+
+        <WebhookLogs ref="logs" :webhook-id="selectedHook"></WebhookLogs>
     </div>
 </template>
 

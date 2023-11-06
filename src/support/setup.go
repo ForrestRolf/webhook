@@ -51,6 +51,6 @@ func Setup(router *gin.Engine, args *Arguments) {
 	h := handle.Hook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger, LogModel: logsClient}
 	router.Any("/hook/:id", h.HandleHook)
 
-	l := handle.Log{MongoClient: mongoClient, Model: logsClient}
+	l := handle.Log{MongoClient: mongoClient, Model: logsClient, Response: response}
 	router.GET("/logs", l.Query)
 }

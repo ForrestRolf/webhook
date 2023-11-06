@@ -26,7 +26,7 @@ type Webhook struct {
 	Enabled               bool               `json:"enabled,omitempty"`
 	PassArgumentsToAction []hook.Argument    `json:"passArgumentsToAction,omitempty" bson:"passArgumentsToAction"`
 	RunCount              int                `json:"runCount" bson:"runCount"`
-	LastRunAt             primitive.DateTime `json:"lastRunAt" bson:"lastRunAt"`
+	LastRunAt             primitive.DateTime `json:"lastRunAt,omitempty" bson:"lastRunAt,omitempty"`
 }
 
 type WebhookClient struct {
