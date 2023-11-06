@@ -33,20 +33,20 @@ func NewShellAction(action *hook.ShellAction, hook *hook.Hook, log *model.LogCli
 func (s *Shell) writeScriptFile(path string, content string) bool {
 	err := ioutil.WriteFile(path, []byte(BashPath+content), 0755)
 	if err != nil {
-		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("Could not write script file. %s", err))
+		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] Could not write script file. %s", err))
 		return false
 	}
-	s.LogModel.AddLog(s.Hook, fmt.Sprintf("Script file created. [%s]", path))
+	s.LogModel.AddLog(s.Hook, fmt.Sprintf("[Shell] Script file created. [%s]", path))
 	return true
 }
 
 func (s *Shell) removeScriptFile(path string) bool {
 	err := os.Remove(path)
 	if err != nil {
-		s.LogModel.AddWarnLog(s.Hook, fmt.Sprintf("[%s] error removing file %s [%s]", s.Hook.ID, path, err))
+		s.LogModel.AddWarnLog(s.Hook, fmt.Sprintf("[Shell] [%s] error removing file %s [%s]", s.Hook.ID, path, err))
 		return false
 	}
-	s.LogModel.AddLog(s.Hook, fmt.Sprintf("Script file removed. [%s]", path))
+	s.LogModel.AddLog(s.Hook, fmt.Sprintf("[Shell] Script file removed. [%s]", path))
 	return true
 }
 
@@ -57,7 +57,7 @@ func (s *Shell) tryAddChmodX(path string) {
 func (s *Shell) Exec(envs []string) {
 	if _, err := os.Stat(s.Action.WorkingDirectory); err != nil {
 		if os.IsNotExist(err) {
-			s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("Working directory not exists. %s", s.Action.WorkingDirectory))
+			s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] Working directory not exists. %s", s.Action.WorkingDirectory))
 			return
 		}
 	}
@@ -70,7 +70,7 @@ func (s *Shell) Exec(envs []string) {
 
 	cmdPath, err := exec.LookPath(lookpath)
 	if err != nil {
-		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("Could not find cmd path. %w", err))
+		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] Could not find cmd path. %w", err))
 		return
 	}
 	cmd := exec.Command(cmdPath)
@@ -79,10 +79,9 @@ func (s *Shell) Exec(envs []string) {
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[%s] error occurred %s", s.Hook.Name, err))
+		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] [%s] error occurred %s", s.Hook.Name, err))
 		return
 	}
-	s.LogModel.AddLog(s.Hook, fmt.Sprintf("Exec successfully. Result: %s", string(out)))
-	_, _ = s.WebhookModel.IncreaseCount(s.Hook.ID, "runCount")
+	s.LogModel.AddLog(s.Hook, fmt.Sprintf("[Shell] Exec successfully. Result: %s", string(out)))
 	s.removeScriptFile(lookpath)
 }

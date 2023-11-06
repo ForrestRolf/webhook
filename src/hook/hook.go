@@ -238,14 +238,21 @@ type Hook struct {
 	PassArgumentsToAction []Argument `json:"pass_arguments_to_action,omitempty"`
 }
 type Action struct {
-	Driver     string            `json:"driver,omitempty"`
-	Attributes map[string]string `json:"attributes,omitempty"`
+	Driver     string                 `json:"driver,omitempty"`
+	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 type ShellAction struct {
 	WorkingDirectory string `bson:"workingDirectory" json:"workingDirectory"`
 	Scripts          string `bson:"scripts" json:"scripts,omitempty"`
 }
 type HttpAction struct {
+	Method       string `json:"method,omitempty" bson:"method"`
+	Url          string `json:"url,omitempty" bson:"url"`
+	ContentType  string `json:"contentType,omitempty" bson:"contentType"`
+	Payload      string `json:"payload,omitempty" bson:"payload"`
+	AuthToken    string `json:"authToken,omitempty" bson:"authToken"`
+	Timeout      int    `json:"timeout,omitempty" bson:"timeout"`
+	SaveResponse bool   `json:"saveResponse,omitempty" bson:"saveResponse"`
 }
 
 type Hooks []Hook

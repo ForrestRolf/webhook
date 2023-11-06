@@ -39,14 +39,21 @@ const handleRemove = (idx) => {
 const addAction = () => {
     actions.value.push({
         "driver": "shell",
-        "attributes": {}
+        "attributes": {
+            "workingDirectory": "/tmp"
+        }
     })
     emit("update:actions", actions.value)
 }
 const addOtherAction = (k) => {
     actions.value.push({
         "driver": "http",
-        "attributes": {}
+        "attributes": {
+            "method": "POST",
+            "contentType": "application/json",
+            "timeout": 30,
+            "saveResponse": true,
+        }
     })
     emit("update:actions", actions.value)
 }

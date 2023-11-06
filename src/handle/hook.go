@@ -35,7 +35,7 @@ func (h *Hook) HandleHook(c *gin.Context) {
 	}
 	_, err = h.Model.IncreaseCount(id, "callCount")
 	if err != nil {
-		h.Logger.Errorf("An exception occurred when counting the number of calls")
+		h.Logger.Errorf("An exception occurred when counting the number of calls. %w", err)
 	}
 
 	if !webhook.Enabled {
@@ -143,6 +143,10 @@ func (h *Hook) HandleHook(c *gin.Context) {
 			}
 		}
 
+		_, err := h.Model.IncreaseCount(matchedHook.ID, "runCount")
+		if err != nil {
+			h.Logger.Errorf("An exception occurred when counting the number of runs. %w", err)
+		}
 		h.Response.Success(c, nil, "OK")
 		return
 	}
