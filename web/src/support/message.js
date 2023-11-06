@@ -1,6 +1,6 @@
 import {notification as notify} from 'ant-design-vue';
 
-function Notification(type, message, description) {
+export function Notification(type, message, description) {
     this.type = type
     this.message = message
     this.description = description

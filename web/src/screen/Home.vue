@@ -1,12 +1,9 @@
 <script setup>
-import {onMounted, reactive, ref} from "vue";
+import {onMounted, ref} from "vue";
 import {
     PlusOutlined,
     EditOutlined,
-    DeleteOutlined,
     CopyOutlined,
-    PlayCircleOutlined,
-    PauseCircleOutlined,
     InfoCircleOutlined,
     CheckOutlined
 } from '@ant-design/icons-vue';
@@ -14,16 +11,14 @@ import {useRouter} from "vue-router";
 import useAxios from "../support/axios.js";
 import TriggerGroupPreview from "../components/triggers/TriggerGroupPreview.vue";
 import ActionPreview from "../components/actions/ActionPreview.vue";
+import DuplicateIt from "../components/DuplicateIt.vue";
+import DeleteIt from "../components/DeleteIt.vue";
+import EnableOrDisableIt from "../components/EnableOrDisableIt.vue";
 
 const router = useRouter()
-const {httpGet, httpPost, httpPut} = useAxios()
+const {httpGet} = useAxios()
 
 const hooks = ref([])
-const loading = reactive({
-    enable: false,
-    disable: false,
-    duplicate: false
-})
 
 const gotoHook = () => {
     router.push({name: "hooks"})
@@ -33,35 +28,6 @@ const fetchWebhooks = () => {
         hooks.value = payload
     }).catch(e => {
 
-    })
-}
-const handleEnableHook = (id) => {
-    loading.enable = true
-    httpPut(`/webhook/${id}/enable`).exec().then(({payload}) => {
-        fetchWebhooks()
-    }).catch(e => {
-
-    }).finally(() => {
-        loading.enable = false
-    })
-}
-const handleDisableHook = (id) => {
-    loading.disable = true
-    httpPut(`/webhook/${id}/disable`).exec().then(({payload}) => {
-        fetchWebhooks()
-    }).catch(e => {
-
-    }).finally(() => {
-        loading.disable = false
-    })
-}
-
-const handleDuplicate = (id) => {
-    loading.duplicate = true
-    httpPost(`/webhook/${id}/duplicate`).exec().then(({payload}) => {
-        fetchWebhooks()
-    }).finally(() => {
-        loading.duplicate = false
     })
 }
 
@@ -121,23 +87,12 @@ onMounted(() => {
                 <ActionPreview :actions="hook.actions"></ActionPreview>
             </a-col>
             <a-col :span="1">
-                <a-button type="text" size="large" v-if="hook.enabled" :loading="loading.disable"
-                          @click="handleDisableHook(hook.id)">
-                    <template #icon>
-                        <PlayCircleOutlined color="primary"/>
-                    </template>
-                </a-button>
-                <a-button type="text" danger size="large" v-if="!hook.enabled" :loading="loading.enable"
-                          @click="handleEnableHook(hook.id)">
-                    <template #icon>
-                        <PauseCircleOutlined/>
-                    </template>
-                </a-button>
+                <EnableOrDisableIt :id="hook.id" :enabled="hook.enabled" @changed="fetchWebhooks"></EnableOrDisableIt>
             </a-col>
             <a-col :span="4">
                 <a-space direction="vertical">
                     <span><a-tag color="blue">Run count:</a-tag> {{ hook.runCount }}</span>
-                    <span><a-tag color="cyan">Last run:</a-tag>{{ hook.lastRunAt }}</span>
+                    <span v-if="hook.lastRunAt"><a-tag color="cyan">Last run:</a-tag>{{ hook.lastRunAt }}</span>
                 </a-space>
             </a-col>
             <a-col :span="2">
@@ -152,16 +107,8 @@ onMounted(() => {
                             <EditOutlined/>
                         </template>
                     </a-button>
-                    <a-button size="small" type="text" @click="handleDuplicate(hook.id)">
-                        <template #icon>
-                            <CopyOutlined color="blue"/>
-                        </template>
-                    </a-button>
-                    <a-button size="small" danger type="text">
-                        <template #icon>
-                            <DeleteOutlined/>
-                        </template>
-                    </a-button>
+                    <DuplicateIt :id="hook.id" @duplicated="fetchWebhooks"></DuplicateIt>
+                    <DeleteIt :id="hook.id" @deleted="fetchWebhooks"></DeleteIt>
                 </a-space>
             </a-col>
         </a-row>
