@@ -98,8 +98,13 @@ func (c *WebhookClient) UpdateWebhook(id string, webhook Webhook) (int, error) {
 	return int(res.ModifiedCount), nil
 }
 
-func (c *WebhookClient) DeleteWebhook() {
-
+func (c *WebhookClient) DeleteWebhook(id string) (int64, error) {
+	objectID, _ := primitive.ObjectIDFromHex(id)
+	res, err := c.webhookCollection.DeleteOne(context.TODO(), bson.M{"_id": objectID})
+	if err != nil {
+		return 0, err
+	}
+	return res.DeletedCount, nil
 }
 
 func (c *WebhookClient) IncreaseCount(id string, field string) (int, error) {

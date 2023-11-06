@@ -22,15 +22,19 @@ const {httpGet} = useAxios()
 const hooks = ref([])
 const selectedHook = ref()
 const logs = ref()
+const loading = ref(true)
 
 const gotoHook = () => {
     router.push({name: "hooks"})
 }
 const fetchWebhooks = () => {
+    loading.value = true
     httpGet("/webhook").exec().then(({payload}) => {
         hooks.value = payload
     }).catch(e => {
 
+    }).finally(() => {
+        loading.value = false
     })
 }
 
@@ -57,7 +61,7 @@ const handleSelectHook = (hook) => {
 }
 
 onMounted(() => {
-    fetchWebhooks()
+    setTimeout(fetchWebhooks, 100)
 })
 </script>
 
@@ -72,6 +76,9 @@ onMounted(() => {
                     New Hook
                 </a-button>
             </a-col>
+        </a-row>
+        <a-row v-show="loading">
+            <a-col :span="24"><a-skeleton active /></a-col>
         </a-row>
         <a-row :gutter="12" class="hooks" v-for="hook in hooks" align="middle">
             <a-col :span="4">

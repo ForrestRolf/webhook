@@ -60,11 +60,23 @@ func (w *Webhook) Update(c *gin.Context) {
 }
 
 func (w *Webhook) Detail(c *gin.Context) {
-
+	id := c.Param("id")
+	webhook, err := w.Model.GetWebhook(id)
+	if err != nil {
+		w.Response.Fail(c, err.Error(), nil)
+		return
+	}
+	w.Response.Success(c, webhook, "")
 }
 
 func (w *Webhook) Delete(c *gin.Context) {
-
+	id := c.Param("id")
+	deletedCount, err := w.Model.DeleteWebhook(id)
+	if err != nil {
+		w.Response.Fail(c, err.Error(), nil)
+		return
+	}
+	w.Response.Success(c, deletedCount, "")
 }
 
 func (w *Webhook) Enable(c *gin.Context) {

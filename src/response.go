@@ -3,6 +3,7 @@ package src
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 type Response struct {
@@ -19,7 +20,7 @@ func (r *Response) Custom(context *gin.Context, httpStatus int, code string, dat
 			"message": msg,
 		},
 		"payload": data,
-		"ts":      0,
+		"ts":      time.Now().UnixMilli(),
 	})
 }
 
