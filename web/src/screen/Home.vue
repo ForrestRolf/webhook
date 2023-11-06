@@ -15,9 +15,11 @@ import DuplicateIt from "../components/DuplicateIt.vue";
 import DeleteIt from "../components/DeleteIt.vue";
 import EnableOrDisableIt from "../components/EnableOrDisableIt.vue";
 import WebhookLogs from "../components/WebhookLogs.vue";
+import useMessage from "../support/message.js";
 
 const router = useRouter()
 const {httpGet} = useAxios()
+const {successMessage} = useMessage()
 
 const hooks = ref([])
 const selectedHook = ref()
@@ -42,15 +44,21 @@ const formatHookLink = (hook) => {
     return `${location.protocol}//${location.host}/hook/${hook.id}`
 }
 
-const copyHookLinkToClipboard = (hook) => {
-    hook.copied = true
-    navigator.clipboard.writeText(formatHookLink(hook)).then(() => {
-
+const copyToClipboard = (msg) => {
+    navigator.clipboard.writeText(msg).then(() => {
+        successMessage("Copied").show()
     }, () => {
     })
+}
+const copyHookLinkToClipboard = (hook) => {
+    hook.copied = true
+    copyToClipboard(formatHookLink(hook))
     setTimeout(() => {
         hook.copied = false
     }, 3000)
+}
+const copyAuthToken = (hook) => {
+    hook.authToken && copyToClipboard(`hook ${hook.authToken}`)
 }
 
 const handleSelectHook = (hook) => {
@@ -88,7 +96,7 @@ onMounted(() => {
             <a-col :span="4">
                 <a-badge status="success" v-if="hook.enabled"/>
                 <a-badge status="error" v-if="!hook.enabled"/>
-                <a-space direction="vertical" @click="copyHookLinkToClipboard(hook)">
+                <a-space direction="vertical">
                     <a-typography-text strong>
                         {{ hook.name }}
                         <a-button size="small" type="text" @click="copyHookLinkToClipboard(hook)">
@@ -99,6 +107,10 @@ onMounted(() => {
                         </a-button>
                     </a-typography-text>
                     <a-typography-text>{{ hook.description }}</a-typography-text>
+                    <a-tooltip>
+                        <template #title>Click to copy token</template>
+                        <a-tag v-show="hook.authToken" color="pink" class="copyable" @click="copyAuthToken(hook)">Authorization=hook {{ hook.authToken }}</a-tag>
+                    </a-tooltip>
                 </a-space>
             </a-col>
             <a-col :span="8">

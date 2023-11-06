@@ -51,6 +51,13 @@ func (h *Hook) HandleHook(c *gin.Context) {
 		PassArgumentsToAction: webhook.PassArgumentsToAction,
 	}
 
+	auth := c.GetHeader("Authorization")
+	if webhook.AuthToken != "" && fmt.Sprintf("hook %s", webhook.AuthToken) != auth {
+		go h.LogModel.AddWarnLog(&matchedHook, "Unauthorized call")
+		h.Response.Unauthorized(c)
+		return
+	}
+
 	req := &hook.Request{
 		RawRequest:  c.Request,
 		ContentType: c.ContentType(),

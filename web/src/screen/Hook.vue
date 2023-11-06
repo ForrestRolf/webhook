@@ -100,11 +100,9 @@ const handleUpdate = () => {
 const loadWebhookDetail = () => {
     if (!isEditMode) return
     httpGet(`/webhook/${route.query.id}`).exec().then(({payload}) => {
-        formState.name = payload.name
-        formState.description = payload.description
-        formState.actions = payload.actions
-        formState.triggers = payload.triggers
-        formState.passArgumentsToAction = payload.passArgumentsToAction || []
+        for (let f of ["name", "description", "actions", "triggers", "passArgumentsToAction", "authToken"]) {
+            formState[f] = payload[f]
+        }
         triggers.value = payload.triggers
         actions.value = payload.actions
         argument.value = payload.passArgumentsToAction || []
@@ -157,13 +155,16 @@ onMounted(() => {
         </a-col>
         <a-col :span="6">
             <a-card title="Basic">
-                <a-form :label-col="{ span: 6 }">
+                <a-form :label-col="{ span: 6 }" :disabled="!stepVisible('basic')">
                     <a-form-item label="Name">
-                        <a-input :disabled="!stepVisible('basic')" v-model:value="formState.name"></a-input>
+                        <a-input v-model:value="formState.name"></a-input>
                     </a-form-item>
                     <a-form-item label="Description">
-                        <a-textarea :rows="4" :disabled="!stepVisible('basic')"
+                        <a-textarea :rows="4"
                                     v-model:value="formState.description"></a-textarea>
+                    </a-form-item>
+                    <a-form-item label="Auth token" help="If it is empty, it means no authorization. Otherwise, set Authorization=hook [token] in the header.">
+                        <a-input  v-model:value="formState.authToken"></a-input>
                     </a-form-item>
                 </a-form>
             </a-card>

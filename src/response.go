@@ -39,3 +39,7 @@ func (r *Response) BadRequest(context *gin.Context, msg string, data interface{}
 func (r *Response) NotFound(context *gin.Context, msg string) {
 	r.Custom(context, http.StatusNotFound, "NOT_FOUND", nil, msg)
 }
+
+func (r *Response) Unauthorized(context *gin.Context) {
+	r.Custom(context, http.StatusUnauthorized, "UNAUTHORIZED", nil, "")
+}
