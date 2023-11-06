@@ -34,7 +34,6 @@ const components = {
     "http": HttpAction
 }
 const handleRemove = (idx) => {
-    console.log(idx)
     actions.value.splice(idx, 1)
 }
 const addAction = () => {

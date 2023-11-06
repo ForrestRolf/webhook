@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, onMounted, ref} from "vue";
+import {computed, nextTick, onMounted, ref} from "vue";
 import {
     PlusOutlined,
     EditOutlined,
@@ -25,6 +25,7 @@ const hooks = ref([])
 const selectedHook = ref()
 const logs = ref()
 const loading = ref(true)
+const keyword = ref(null)
 
 const gotoHook = () => {
     router.push({name: "hooks"})
@@ -39,6 +40,15 @@ const fetchWebhooks = () => {
         loading.value = false
     })
 }
+
+const filteredHooks = computed(() => {
+    if (!keyword.value) {
+        return hooks.value
+    }
+    return hooks.value.filter(h => {
+        return h.name.indexOf(keyword.value) > -1 || h.description.indexOf(keyword.value) > -1
+    })
+})
 
 const formatHookLink = (hook) => {
     return `${location.protocol}//${location.host}/hook/${hook.id}`
@@ -80,7 +90,14 @@ onMounted(() => {
 <template>
     <div class="home">
         <a-row class="new-hook">
-            <a-col :span="24">
+            <a-col :span="12">
+                <a-input-search
+                    class="webhook-search"
+                    v-model:value="keyword"
+                    placeholder="Enter keywords to start searching"
+                />
+            </a-col>
+            <a-col :span="12" class="txt-rgt">
                 <a-button type="primary" @click="gotoHook">
                     <template #icon>
                         <PlusOutlined/>
@@ -90,9 +107,11 @@ onMounted(() => {
             </a-col>
         </a-row>
         <a-row v-show="loading">
-            <a-col :span="24"><a-skeleton active /></a-col>
+            <a-col :span="24">
+                <a-skeleton active/>
+            </a-col>
         </a-row>
-        <a-row :gutter="12" class="hooks" v-for="hook in hooks" align="middle">
+        <a-row :gutter="12" class="hooks" v-for="hook in filteredHooks" align="middle">
             <a-col :span="4">
                 <a-badge status="success" v-if="hook.enabled"/>
                 <a-badge status="error" v-if="!hook.enabled"/>
@@ -109,7 +128,9 @@ onMounted(() => {
                     <a-typography-text>{{ hook.description }}</a-typography-text>
                     <a-tooltip>
                         <template #title>Click to copy token</template>
-                        <a-tag v-show="hook.authToken" color="pink" class="copyable" @click="copyAuthToken(hook)">Authorization=hook {{ hook.authToken }}</a-tag>
+                        <a-tag v-show="hook.authToken" color="pink" class="copyable" @click="copyAuthToken(hook)">
+                            Authorization=hook {{ hook.authToken }}
+                        </a-tag>
                     </a-tooltip>
                 </a-space>
             </a-col>

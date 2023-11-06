@@ -99,7 +99,8 @@ const handleUpdate = () => {
 
 const loadWebhookDetail = () => {
     if (!isEditMode) return
-    httpGet(`/webhook/${route.query.id}`).exec().then(({payload}) => {
+    if (!webhookId.value) return
+    httpGet(`/webhook/${webhookId.value}`).exec().then(({payload}) => {
         for (let f of ["name", "description", "actions", "triggers", "passArgumentsToAction", "authToken"]) {
             formState[f] = payload[f]
         }
@@ -114,7 +115,7 @@ const loadWebhookDetail = () => {
 const addArgument = () => {
     argument.value.push({
         source: "payload",
-        value: "",
+        name: "",
         envname: "",
     })
 }

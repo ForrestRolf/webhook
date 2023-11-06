@@ -36,7 +36,7 @@ const handleRemove = () => {
 <template>
     <a-space>
         <a-select v-model:value="argument.source" :disabled="props.disabled">
-            <a-select-option :value="src.source" v-for="src in argumentSources">{{ src.label }}</a-select-option>
+            <a-select-option :value="src.name" v-for="src in argumentSources">{{ src.label }}</a-select-option>
         </a-select>
         <a-input v-model:value="argument.name" :disabled="props.disabled" placeholder="pusher.email"></a-input>
         <div>Set to env:</div>

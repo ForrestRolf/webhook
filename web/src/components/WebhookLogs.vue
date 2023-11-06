@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import useAxios from "../support/axios.js";
+import loglevelColor from "../support/log-level.js"
 
 const props = defineProps({
     webhookId: {
@@ -9,25 +10,20 @@ const props = defineProps({
 })
 const visible = ref(false)
 const {httpGet} = useAxios()
+const loading = ref(false)
 
 const id = computed(() => {
     return props.webhookId
 })
-const tags = {
-    "OK": "green",
-    "warn": "orange",
-    "error": "red",
-    "info": "blue",
-    "debug": "purple",
-}
 
 const fetchLogs = () => {
-    httpGet(`/logs`).withQuery({id: id.value}).exec().then(data => {
+    loading.value = true
+    httpGet(`/logs`).withQuery({id: id.value, limit: 1000}).exec().then(data => {
         logs.value = data.payload
     }).catch(e => {
 
     }).finally(() => {
-
+        loading.value = false
     })
 }
 const show = () => {
@@ -76,10 +72,10 @@ defineExpose({show, hide})
         placement="right"
         width="40%"
     >
-        <a-table :dataSource="logs" :columns="columns" :pagination="{defaultPageSize: 15}">
+        <a-table :dataSource="logs" :columns="columns" :pagination="{defaultPageSize: 20}" size="small" :loading="loading">
             <template #bodyCell="{ text, record, index, column }">
                 <template v-if="column.key === 'level'">
-                    <a-tag :color="tags[text] || 'blue'">{{ text }}</a-tag>
+                    <a-tag :color="loglevelColor[text] || 'blue'">{{ text.toUpperCase() }}</a-tag>
                 </template>
             </template>
         </a-table>

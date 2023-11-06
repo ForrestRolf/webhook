@@ -81,10 +81,10 @@ func (l *LogClient) ParseErrors(errors []error) string {
 	return e
 }
 
-func (l *LogClient) QueryLogs(id string) ([]Log, error) {
+func (l *LogClient) QueryLogs(id string, limit int64) ([]Log, error) {
 	logs := make([]Log, 0)
 
-	opts := options.Find().SetSort(bson.D{{"_id", -1}}).SetLimit(2000)
+	opts := options.Find().SetSort(bson.D{{"_id", -1}}).SetLimit(limit)
 	filter := bson.D{}
 	if id != "" {
 		filter = bson.D{{"webhookId", id}}

@@ -24,7 +24,6 @@ const trigger = computed({
         return props.trigger
     },
     set(t) {
-        console.log(t)
         emit("update:trigger", t)
     },
 })
