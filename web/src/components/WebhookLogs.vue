@@ -76,7 +76,7 @@ defineExpose({show, hide})
         placement="right"
         width="40%"
     >
-        <a-table :dataSource="logs" :columns="columns">
+        <a-table :dataSource="logs" :columns="columns" :pagination="{defaultPageSize: 15}">
             <template #bodyCell="{ text, record, index, column }">
                 <template v-if="column.key === 'level'">
                     <a-tag :color="tags[text] || 'blue'">{{ text }}</a-tag>

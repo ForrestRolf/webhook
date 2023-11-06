@@ -101,7 +101,7 @@ onMounted(() => {
             </a-col>
             <a-col :span="4">
                 <a-space direction="vertical">
-                    <span><a-tag color="blue">Run count:</a-tag> {{ hook.runCount }}</span>
+                    <span><a-tag color="green">Run count:</a-tag> {{ hook.runCount }} / {{ hook.callCount }}</span>
                     <span v-if="hook.lastRunAt"><a-tag color="cyan">Last run:</a-tag>{{ hook.lastRunAt }}</span>
                 </a-space>
             </a-col>

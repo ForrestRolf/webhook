@@ -29,7 +29,16 @@ func (h *Hook) HandleHook(c *gin.Context) {
 		h.Response.Fail(c, err.Error(), nil)
 		return
 	}
-	if webhook.Id.IsZero() || !webhook.Enabled {
+	if webhook.Id.IsZero() {
+		h.Response.NotFound(c, "Webhook not found")
+		return
+	}
+	_, err = h.Model.IncreaseCount(id, "callCount")
+	if err != nil {
+		h.Logger.Errorf("An exception occurred when counting the number of calls")
+	}
+
+	if !webhook.Enabled {
 		h.Response.NotFound(c, "Webhook not found")
 		return
 	}

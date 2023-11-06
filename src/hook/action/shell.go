@@ -83,6 +83,6 @@ func (s *Shell) Exec(envs []string) {
 		return
 	}
 	s.LogModel.AddLog(s.Hook, fmt.Sprintf("Exec successfully. Result: %s", string(out)))
-	_, _ = s.WebhookModel.IncreaseRunCount(s.Hook.ID)
+	_, _ = s.WebhookModel.IncreaseCount(s.Hook.ID, "runCount")
 	s.removeScriptFile(lookpath)
 }

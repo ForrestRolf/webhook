@@ -27,6 +27,7 @@ type Webhook struct {
 	PassArgumentsToAction []hook.Argument    `json:"passArgumentsToAction,omitempty" bson:"passArgumentsToAction"`
 	RunCount              int                `json:"runCount" bson:"runCount"`
 	LastRunAt             primitive.DateTime `json:"lastRunAt,omitempty" bson:"lastRunAt,omitempty"`
+	CallCount             int                `json:"callCount" bson:"callCount"`
 }
 
 type WebhookClient struct {
@@ -44,6 +45,7 @@ func NewWebhookClient(client *mongo.Client, db string) *WebhookClient {
 func (c *WebhookClient) AddWebhook(webhook *Webhook) error {
 	webhook.Enabled = true
 	webhook.RunCount = 0
+	webhook.CallCount = 0
 	_, err := c.webhookCollection.InsertOne(context.TODO(), webhook)
 	if err != nil {
 		return err
@@ -100,12 +102,12 @@ func (c *WebhookClient) DeleteWebhook() {
 
 }
 
-func (c *WebhookClient) IncreaseRunCount(id string) (int, error) {
+func (c *WebhookClient) IncreaseCount(id string, field string) (int, error) {
 	objectID, _ := primitive.ObjectIDFromHex(id)
 	res, err := c.webhookCollection.UpdateOne(context.TODO(), bson.M{"_id": objectID}, bson.D{
 		{
 			"$inc", bson.D{
-				{"runCount", 1},
+				{field, 1},
 			},
 		},
 		{
