@@ -1,16 +1,17 @@
 <script setup>
 import {LeftCircleOutlined, PlusCircleOutlined} from "@ant-design/icons-vue"
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import TriggerGroup from "../components/triggers/TriggerGroup.vue";
-import {reactive, ref, watch} from "vue";
+import {computed, onMounted, reactive, ref, watch} from "vue";
 import Action from "../components/actions/Action.vue";
 import useAxios from "../support/axios.js";
 import PassArgument from "../components/PassArgument.vue";
 import useMessage from "../support/message.js";
 
+const route = useRoute()
 const router = useRouter()
-const {httpPost} = useAxios()
-const {successMessage} = useMessage()
+const {httpPost, httpGet, httpPut} = useAxios()
+const {successMessage, errorMessage} = useMessage()
 
 const currentStep = ref("basic")
 const steps = ref(["basic", "triggers", "actions"])
@@ -36,7 +37,7 @@ const formState = reactive({
     description: null,
     triggers: {},
     actions: [],
-    pass_arguments_to_action: []
+    passArgumentsToAction: []
 })
 
 const triggers = ref({
@@ -61,10 +62,14 @@ const actions = ref([
     }
 ])
 
-const argument = ref([
-
-])
+const argument = ref([])
 const loading = ref(false)
+const webhookId = computed(() => {
+    return route.query.id
+})
+const isEditMode = computed(() => {
+    return !!route.query.id
+})
 
 const handleSave = () => {
     loading.value = true
@@ -72,8 +77,39 @@ const handleSave = () => {
         loading.value = false
         successMessage("Webhook created", payload.name).show()
         backToHome()
-    }).catch(err => {
+    }).catch(e => {
+        errorMessage("Error", e).show()
+    }).finally(err => {
         loading.value = false
+    })
+}
+
+const handleUpdate = () => {
+    loading.value = true
+    httpPut(`/webhook/${webhookId.value}`).withBody(formState).exec().then(({payload, meta}) => {
+        loading.value = false
+        successMessage("Webhook updated", payload.name).show()
+        backToHome()
+    }).catch(e => {
+        errorMessage("Error", e).show()
+    }).finally(err => {
+        loading.value = false
+    })
+}
+
+const loadWebhookDetail = () => {
+    if (!isEditMode) return
+    httpGet(`/webhook/${route.query.id}`).exec().then(({payload}) => {
+        formState.name = payload.name
+        formState.description = payload.description
+        formState.actions = payload.actions
+        formState.triggers = payload.triggers
+        formState.passArgumentsToAction = payload.passArgumentsToAction || []
+        triggers.value = payload.triggers
+        actions.value = payload.actions
+        argument.value = payload.passArgumentsToAction || []
+    }).finally(() => {
+
     })
 }
 
@@ -99,9 +135,13 @@ watch(actions, () => {
     deep: true
 })
 watch(argument, () => {
-    formState.pass_arguments_to_action = argument.value
+    formState.passArgumentsToAction = argument.value
 }, {
     deep: true
+})
+
+onMounted(() => {
+    loadWebhookDetail()
 })
 </script>
 
@@ -112,17 +152,18 @@ watch(argument, () => {
                 <a-button type="text" @click="backToHome">
                     <LeftCircleOutlined class="mini-back-btn"/>
                 </a-button>
-                <a-typography-title :level="3" class="no-margin">New Webhook</a-typography-title>
+                <a-typography-title :level="3" class="no-margin">{{ isEditMode ? "Edit" : "New" }} Webhook</a-typography-title>
             </a-space>
         </a-col>
         <a-col :span="6">
             <a-card title="Basic">
                 <a-form :label-col="{ span: 6 }">
                     <a-form-item label="Name">
-                        <a-input :disabled="!stepVisible('basic')" v-model:value="formState.name" ></a-input>
+                        <a-input :disabled="!stepVisible('basic')" v-model:value="formState.name"></a-input>
                     </a-form-item>
                     <a-form-item label="Description">
-                        <a-textarea :rows="4" :disabled="!stepVisible('basic')" v-model:value="formState.description"></a-textarea>
+                        <a-textarea :rows="4" :disabled="!stepVisible('basic')"
+                                    v-model:value="formState.description"></a-textarea>
                     </a-form-item>
                 </a-form>
             </a-card>
@@ -140,10 +181,10 @@ watch(argument, () => {
             <a-card title="Arguments">
                 <a-row :gutter="[12, 12]">
                     <a-col :span="24" v-for="(arg, i) in argument">
-                        <PassArgument v-model:argument="argument[i]" @remove="handleRemoveArgument(i)"></PassArgument>
+                        <PassArgument v-model:argument="argument[i]" @remove="handleRemoveArgument(i)" :disabled="!stepVisible('triggers')"></PassArgument>
                     </a-col>
                     <a-col :span="24">
-                        <a-button @click="addArgument">
+                        <a-button @click="addArgument" :disabled="!stepVisible('triggers')">
                             <template #icon>
                                 <PlusCircleOutlined/>
                             </template>
@@ -168,7 +209,12 @@ watch(argument, () => {
             <a-space class="float-rgt">
                 <a-button type="default" class="step-btn" v-show="stepVisible('actions')" @click="handlePrevStep">Prev
                 </a-button>
-                <a-button type="primary" class="step-btn" v-show="stepVisible('actions')" @click="handleSave" :loading="loading">Save</a-button>
+                <a-button type="primary" class="step-btn" v-show="stepVisible('actions') && !isEditMode"
+                          @click="handleSave" :loading="loading">Save
+                </a-button>
+                <a-button type="primary" class="step-btn" v-show="stepVisible('actions') && isEditMode"
+                          @click="handleUpdate" :loading="loading">Update
+                </a-button>
             </a-space>
         </a-col>
     </a-row>

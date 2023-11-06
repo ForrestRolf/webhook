@@ -60,6 +60,10 @@ const handleSelectHook = (hook) => {
     })
 }
 
+const gotoEdit = (hook) => {
+    router.push({name: "hooks", query: {id: hook.id}})
+}
+
 onMounted(() => {
     setTimeout(fetchWebhooks, 100)
 })
@@ -119,7 +123,7 @@ onMounted(() => {
                             <InfoCircleOutlined/>
                         </template>
                     </a-button>
-                    <a-button size="small" type="text">
+                    <a-button size="small" type="text" @click="gotoEdit(hook)">
                         <template #icon>
                             <EditOutlined/>
                         </template>

@@ -90,6 +90,7 @@ func (c *WebhookClient) UpdateWebhook(id string, webhook Webhook) (int, error) {
 			{"description", webhook.Description},
 			{"triggers", webhook.Triggers},
 			{"actions", webhook.Actions},
+			{"passArgumentsToAction", webhook.PassArgumentsToAction},
 		},
 	}})
 	if err != nil {

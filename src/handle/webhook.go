@@ -47,13 +47,9 @@ func (w *Webhook) Update(c *gin.Context) {
 		w.Response.BadRequest(c, err.Error(), nil)
 		return
 	}
-	modifiedCount, err := w.Model.UpdateWebhook(id, webhook)
+	_, err := w.Model.UpdateWebhook(id, webhook)
 	if err != nil {
 		w.Response.Fail(c, err.Error(), nil)
-		return
-	}
-	if modifiedCount == 0 {
-		w.Response.NotFound(c, "")
 		return
 	}
 	w.Response.Success(c, webhook, "")
