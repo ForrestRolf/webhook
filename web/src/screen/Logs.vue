@@ -43,7 +43,7 @@ const fetchLogs = () => {
     })
 }
 onMounted(() => {
-    fetchLogs()
+    setTimeout(fetchLogs, 200)
 })
 </script>
 

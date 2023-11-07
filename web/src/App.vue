@@ -1,6 +1,7 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, h, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
+import {NodeExpandOutlined, ExceptionOutlined} from "@ant-design/icons-vue"
 
 const route = useRoute()
 const router = useRouter()
@@ -13,6 +14,20 @@ const selectedKeys = computed({
         return [route.meta.menuKey]
     }
 })
+const menus = ref([
+    {
+        key: 'home',
+        icon: () => h(NodeExpandOutlined),
+        label: 'Webhooks',
+        title: 'Webhooks',
+    },
+    {
+        key: 'logs',
+        icon: () => h(ExceptionOutlined),
+        label: 'Logs',
+        title: 'Logs',
+    },
+])
 </script>
 
 <template>
@@ -21,8 +36,9 @@ const selectedKeys = computed({
             <div class="logo"/>
             <a-menu
                 v-model:selectedKeys="selectedKeys"
-                theme="dark"
+                theme="light"
                 mode="horizontal"
+                :items="menus"
                 :style="{ lineHeight: '64px' }"
             >
                 <a-menu-item key="home">Hooks</a-menu-item>

@@ -129,7 +129,7 @@ onMounted(() => {
                     <a-tooltip>
                         <template #title>Click to copy token</template>
                         <a-tag v-show="hook.authToken" color="pink" class="copyable" @click="copyAuthToken(hook)">
-                            Authorization=hook {{ hook.authToken }}
+                            Authorization=hook ******
                         </a-tag>
                     </a-tooltip>
                 </a-space>

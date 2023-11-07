@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"webhook/src/hook"
 	"webhook/src/model"
 )
@@ -31,7 +32,11 @@ func NewShellAction(action *hook.ShellAction, hook *hook.Hook, log *model.LogCli
 }
 
 func (s *Shell) writeScriptFile(path string, content string) bool {
-	err := ioutil.WriteFile(path, []byte(BashPath+content), 0755)
+	_content := content
+	if !strings.HasPrefix(content, "#!") {
+		_content = BashPath + content
+	}
+	err := ioutil.WriteFile(path, []byte(_content), 0755)
 	if err != nil {
 		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] Could not write script file. %s", err))
 		return false

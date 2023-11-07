@@ -3,6 +3,7 @@ import {computed, ref} from "vue";
 import {ArrowDownOutlined, DeleteOutlined, NodeExpandOutlined} from "@ant-design/icons-vue"
 import ShellAction from "./ShellAction.vue";
 import HttpAction from "./HttpAction.vue";
+import CodeEditor from "../CodeEditor.vue";
 
 const emit = defineEmits(["update:actions"])
 const props = defineProps({
@@ -57,6 +58,13 @@ const addOtherAction = (k) => {
     })
     emit("update:actions", actions.value)
 }
+
+const codeEditor = ref()
+const onCodeSave = ref()
+const handleCodeEditor = ({code, lang, onSave}) => {
+    onCodeSave.value = onSave
+    codeEditor.value.open(lang, code)
+}
 </script>
 
 <template>
@@ -67,7 +75,7 @@ const addOtherAction = (k) => {
                     <DeleteOutlined/>
                 </template>
             </a-button>
-            <component :is="components[action.driver]" :disabled="props.disabled" v-model:attributes="actions[i].attributes"></component>
+            <component :is="components[action.driver]" :disabled="props.disabled" v-model:attributes="actions[i].attributes" :handle-code-editor="handleCodeEditor"></component>
             <a-divider v-show="i < actions.length - 1">
                 <ArrowDownOutlined/>
             </a-divider>
@@ -85,6 +93,8 @@ const addOtherAction = (k) => {
                 </template>
             </a-dropdown-button>
         </a-col>
+
+        <CodeEditor ref="codeEditor" :on-save="onCodeSave"></CodeEditor>
     </a-row>
 </template>
 

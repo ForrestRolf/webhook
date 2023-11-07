@@ -1,5 +1,6 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
+import {CodeOutlined} from "@ant-design/icons-vue";
 
 const props = defineProps({
     disabled: {
@@ -14,6 +15,12 @@ const props = defineProps({
             return {}
         }
     },
+    handleCodeEditor: {
+        type: Function,
+        default() {
+            return () => {}
+        }
+    }
 })
 
 const emit = defineEmits(["update:attributes"])
@@ -26,6 +33,30 @@ const attributes = computed({
         emit("update:attributes", v)
     }
 })
+const handleCodeChange = (code) => {
+    attributes.value.payload = code
+}
+
+const openCodeEditor = () => {
+    let mime2language = {
+        "text/plain": "plaintext",
+        "application/json": "json",
+        "application/xml": "xml",
+    }
+    let defaultCode = {
+        "plaintext": "",
+        "json": "{}",
+        "xml": "<?xml version=\"1.0\"?>",
+    }
+    let mime = attributes.value.contentType
+    let lang = mime2language[mime] ? mime2language[mime] : "plaintext"
+
+    props.handleCodeEditor({
+        lang: lang,
+        code: attributes.value.payload || defaultCode[lang],
+        onSave: handleCodeChange
+    })
+}
 </script>
 
 <template>
@@ -39,7 +70,7 @@ const attributes = computed({
                             <a-select-option value="POST">POST</a-select-option>
                             <a-select-option value="PUT">PUT</a-select-option>
                         </a-select>
-                        <a-input v-model:value="attributes.url" style="width: 50%" />
+                        <a-input v-model:value="attributes.url" style="width: 50%"/>
                     </a-input-group>
                 </a-form-item>
                 <a-form-item label="Content type">
@@ -51,6 +82,12 @@ const attributes = computed({
                 </a-form-item>
                 <a-form-item label="Payload">
                     <a-textarea v-model:value="attributes.payload" :rows="4"></a-textarea>
+                    <a-button size="small" type="text" @click="openCodeEditor">
+                        <template #icon>
+                            <CodeOutlined/>
+                        </template>
+                        Open in code editor
+                    </a-button>
                 </a-form-item>
                 <a-form-item label="Auth header">
                     <a-input v-model:value="attributes.authToken"></a-input>
