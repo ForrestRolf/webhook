@@ -1,14 +1,41 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli"
+	"io/fs"
+	"net/http"
 	"os"
 	"webhook/src/support"
 )
+
+//go:embed web/dist
+var web embed.FS
+
+type embedFileSystem struct {
+	http.FileSystem
+}
+
+func (e embedFileSystem) Exists(prefix string, path string) bool {
+	_, err := e.Open(path)
+	if err != nil {
+		return false
+	}
+	return true
+}
+func EmbedFolder(fsEmbed embed.FS, targetPath string) static.ServeFileSystem {
+	fsys, err := fs.Sub(fsEmbed, targetPath)
+	if err != nil {
+		panic(err)
+	}
+	return embedFileSystem{
+		FileSystem: http.FS(fsys),
+	}
+}
 
 func runServer(args support.Arguments) error {
 	if args.LogLevel != "debug" && args.LogLevel != "trace" {
@@ -18,9 +45,14 @@ func runServer(args support.Arguments) error {
 	r.Use(gin.Recovery())
 	r.Use(support.LoggingMiddleware())
 	r.Use(cors.Default())
-	r.Use(static.Serve("/", static.LocalFile(args.StaticContents, false)))
+
+	www := EmbedFolder(web, "web/dist")
+	r.Use(static.Serve("/", www))
 	support.Setup(r, &args)
 
+	r.NoRoute(func(c *gin.Context) {
+		c.FileFromFS("index.html", www)
+	})
 	if err := r.Run(fmt.Sprintf("%s:%d", args.BindAddress, args.BindPort)); err != nil {
 		return err
 	}
@@ -51,13 +83,8 @@ func main() {
 			Destination: &args.BindPort,
 		},
 		cli.StringFlag{
-			Name: "static, s", Value: "./static/",
-			Usage:       "Static contents path",
-			Destination: &args.StaticContents,
-		},
-		cli.StringFlag{
 			Name: "uri", Value: "",
-			Usage:       "MongoDB connection uri. eg. mongodb://username:password@localhost:27017/webhook",
+			Usage:       "MongoDB connection uri. eg. mongodb://username:password@localhost:27017",
 			Destination: &args.MongoConnectionUri,
 			Required:    true,
 		},

@@ -14,7 +14,6 @@ type Arguments struct {
 	LogLevel           string
 	BindAddress        string
 	BindPort           int
-	StaticContents     string
 	MongoConnectionUri string
 	Database           string
 }
