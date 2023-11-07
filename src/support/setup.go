@@ -47,6 +47,7 @@ func Setup(router *gin.Engine, args *Arguments) {
 	router.PUT("/webhook/:id/enable", w.Enable)
 	router.PUT("/webhook/:id/disable", w.Disable)
 	router.POST("/webhook/:id/duplicate", w.Duplicate)
+	router.POST("/import", w.Import)
 
 	h := handle.Hook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger, LogModel: logsClient}
 	router.Any("/hook/:id", h.HandleHook)

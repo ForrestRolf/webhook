@@ -1,10 +1,12 @@
 package handle
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"io/ioutil"
 	"webhook/src"
 	"webhook/src/model"
 )
@@ -114,6 +116,35 @@ func (w *Webhook) Duplicate(c *gin.Context) {
 	webhook.Id = primitive.NewObjectID()
 
 	if err := w.Model.AddWebhook(&webhook); err != nil {
+		w.Response.Fail(c, err.Error(), nil)
+		return
+	}
+	w.Response.Success(c, webhook, "")
+}
+
+func (w *Webhook) Import(c *gin.Context) {
+	file, _ := c.FormFile("file")
+
+	var webhook model.Webhook
+	f, _ := file.Open()
+	content, _ := ioutil.ReadAll(f)
+	err := json.Unmarshal(content, &webhook)
+	if err != nil {
+		w.Response.Fail(c, err.Error(), "")
+		return
+	}
+
+	hook := model.Webhook{
+		Name:                  webhook.Name,
+		Description:           webhook.Description,
+		Triggers:              webhook.Triggers,
+		Actions:               webhook.Actions,
+		PassArgumentsToAction: webhook.PassArgumentsToAction,
+		RunCount:              0,
+		CallCount:             0,
+		AuthToken:             webhook.AuthToken,
+	}
+	if err := w.Model.AddWebhook(&hook); err != nil {
 		w.Response.Fail(c, err.Error(), nil)
 		return
 	}

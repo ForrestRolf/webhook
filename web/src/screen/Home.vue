@@ -5,7 +5,9 @@ import {
     EditOutlined,
     CopyOutlined,
     InfoCircleOutlined,
-    CheckOutlined
+    CheckOutlined,
+    CloudDownloadOutlined,
+    CloudUploadOutlined
 } from '@ant-design/icons-vue';
 import {useRouter} from "vue-router";
 import useAxios from "../support/axios.js";
@@ -16,10 +18,11 @@ import DeleteIt from "../components/DeleteIt.vue";
 import EnableOrDisableIt from "../components/EnableOrDisableIt.vue";
 import WebhookLogs from "../components/WebhookLogs.vue";
 import useMessage from "../support/message.js";
+import {download} from "../support/file.js";
 
 const router = useRouter()
 const {httpGet} = useAxios()
-const {successMessage} = useMessage()
+const {successMessage, errorMessage} = useMessage()
 
 const hooks = ref([])
 const selectedHook = ref()
@@ -50,6 +53,11 @@ const filteredHooks = computed(() => {
     })
 })
 
+const fileList = ref([])
+const uploadUrl = computed(() => {
+    return `${location.protocol}//${location.host}/import`
+})
+
 const formatHookLink = (hook) => {
     return `${location.protocol}//${location.host}/hook/${hook.id}`
 }
@@ -77,6 +85,24 @@ const handleSelectHook = (hook) => {
         logs.value.show()
     })
 }
+const handleExport = (hook) => {
+    httpGet(`/webhook/${hook.id}`).exec().then(({payload}) => {
+        download(JSON.stringify(payload), `${hook.id}.json`, "application/json")
+    }).catch()
+}
+const onUploadFileChange = ({file}) => {
+    switch (file.status) {
+        case "done":
+            if (file.response.meta.code === "OK") {
+                successMessage("Import successfully").show()
+                fetchWebhooks()
+            }
+            break;
+        case "error":
+            errorMessage("Unable to import this file. Please try again", file?.response?.meta?.message).show()
+            break;
+    }
+}
 
 const gotoEdit = (hook) => {
     router.push({name: "hooks", query: {id: hook.id}})
@@ -98,12 +124,28 @@ onMounted(() => {
                 />
             </a-col>
             <a-col :span="12" class="txt-rgt">
-                <a-button type="primary" @click="gotoHook">
-                    <template #icon>
-                        <PlusOutlined/>
-                    </template>
-                    New Hook
-                </a-button>
+                <a-space>
+                    <a-upload
+                        v-model:file-list="fileList"
+                        name="file"
+                        :action="uploadUrl"
+                        :headers="{'X-Requested-With': null}"
+                        @change="onUploadFileChange"
+                    >
+                        <a-button>
+                            <template #icon>
+                                <CloudUploadOutlined/>
+                            </template>
+                            Import
+                        </a-button>
+                    </a-upload>
+                    <a-button type="primary" @click="gotoHook">
+                        <template #icon>
+                            <PlusOutlined/>
+                        </template>
+                        New Hook
+                    </a-button>
+                </a-space>
             </a-col>
         </a-row>
         <a-row v-show="loading">
@@ -161,6 +203,11 @@ onMounted(() => {
                             <EditOutlined/>
                         </template>
                     </a-button>
+                    <a-button size="small" type="text" @click="handleExport(hook)">
+                        <template #icon>
+                            <CloudDownloadOutlined/>
+                        </template>
+                    </a-button>
                     <DuplicateIt :id="hook.id" @duplicated="fetchWebhooks"></DuplicateIt>
                     <DeleteIt :id="hook.id" @deleted="fetchWebhooks"></DeleteIt>
                 </a-space>
@@ -171,6 +218,8 @@ onMounted(() => {
     </div>
 </template>
 
-<style scoped>
-
+<style>
+.ant-upload-list {
+    display: none;
+}
 </style>
