@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: 16
       - run: cd web && npm install &&  npm run build
+      - uses: actions/cache/save@v3
+        with:
+          path: /dist
+          key: web-dist-${{ github.event.release.tag_name }}
 
   webhook:
     runs-on: ubuntu-latest
@@ -34,6 +38,14 @@ jobs:
           - goarch: arm64
             goos: windows
     steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache/restore@v3
+        id: cache
+        with:
+          path: /web/dist
+          key: web-dist-${{ github.event.release.tag_name }}
+          fail-on-cache-miss: true
+
       - name: Set up Go 1.21
         uses: actions/setup-go@v4
         with:
