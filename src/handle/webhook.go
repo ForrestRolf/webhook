@@ -143,6 +143,7 @@ func (w *Webhook) Import(c *gin.Context) {
 		RunCount:              0,
 		CallCount:             0,
 		AuthToken:             webhook.AuthToken,
+		SaveRequest:           webhook.SaveRequest,
 	}
 	if err := w.Model.AddWebhook(&hook); err != nil {
 		w.Response.Fail(c, err.Error(), nil)

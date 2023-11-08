@@ -29,6 +29,7 @@ type Webhook struct {
 	LastRunAt             primitive.DateTime `json:"lastRunAt,omitempty" bson:"lastRunAt,omitempty"`
 	CallCount             int                `json:"callCount" bson:"callCount"`
 	AuthToken             string             `json:"authToken,omitempty" bson:"authToken,omitempty"`
+	SaveRequest           []string           `json:"saveRequest,omitempty" bson:"saveRequest"`
 }
 
 type WebhookClient struct {
@@ -93,6 +94,7 @@ func (c *WebhookClient) UpdateWebhook(id string, webhook Webhook) (int, error) {
 			{"actions", webhook.Actions},
 			{"passArgumentsToAction", webhook.PassArgumentsToAction},
 			{"authToken", webhook.AuthToken},
+			{"saveRequest", webhook.SaveRequest},
 		},
 	}})
 	if err != nil {

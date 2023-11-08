@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
+	"slices"
 	"strings"
 	"webhook/src"
 	"webhook/src/hook"
@@ -63,14 +64,20 @@ func (h *Hook) HandleHook(c *gin.Context) {
 		ContentType: c.ContentType(),
 	}
 	req.Body, _ = c.GetRawData()
+	req.ParseHeaders(c.Request.Header)
+	req.ParseQuery(c.Request.URL.Query())
 
-	var headers map[string][]string
-	_ = c.ShouldBindHeader(&headers)
-	req.ParseHeaders(headers)
-
-	var query map[string][]string
-	_ = c.ShouldBindQuery(&query)
-	req.ParseQuery(query)
+	saveReq := &hook.DebugRequest{}
+	if slices.Contains(webhook.SaveRequest, "body") {
+		saveReq.Body = string(req.Body)
+	}
+	if slices.Contains(webhook.SaveRequest, "header") {
+		saveReq.Headers = c.Request.Header
+	}
+	if slices.Contains(webhook.SaveRequest, "query") {
+		saveReq.Query = c.Request.URL.Query()
+	}
+	go h.LogModel.AddDebugLog(&matchedHook, saveReq.ToJson())
 
 	switch {
 	case strings.Contains(req.ContentType, "json"):
@@ -104,7 +111,7 @@ func (h *Hook) HandleHook(c *gin.Context) {
 	}
 
 	if ok {
-		h.Logger.Debugf("[%s] %s hook triggered successfully", req.ID, matchedHook.ID)
+		h.Logger.Debugf("[%s] %s hook triggered successfully", matchedHook.ID, matchedHook.Name)
 		go h.LogModel.AddLog(&matchedHook, fmt.Sprintf("%s triggered successfully", matchedHook.Name))
 
 		envs, errors := matchedHook.ExtractArgumentsForEnv(req)

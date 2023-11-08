@@ -37,7 +37,8 @@ const formState = reactive({
     description: null,
     triggers: {},
     actions: [],
-    passArgumentsToAction: []
+    passArgumentsToAction: [],
+    saveRequest: ["body"]
 })
 
 const triggers = ref({
@@ -60,6 +61,11 @@ const actions = ref([
         "driver": "shell",
         "attributes": {}
     }
+])
+const saveRequestOptions = ref([
+    { label: 'Body', value: 'body' },
+    { label: 'Header', value: 'header' },
+    { label: 'Query', value: 'query' },
 ])
 
 const argument = ref([])
@@ -101,7 +107,7 @@ const loadWebhookDetail = () => {
     if (!isEditMode) return
     if (!webhookId.value) return
     httpGet(`/webhook/${webhookId.value}`).exec().then(({payload}) => {
-        for (let f of ["name", "description", "actions", "triggers", "passArgumentsToAction", "authToken"]) {
+        for (let f of ["name", "description", "actions", "triggers", "passArgumentsToAction", "authToken", "saveRequest"]) {
             formState[f] = payload[f]
         }
         triggers.value = payload.triggers
@@ -166,6 +172,9 @@ onMounted(() => {
                     </a-form-item>
                     <a-form-item label="Auth token" help="If it is empty, it means no authorization. Otherwise, set Authorization=hook [token] in the header.">
                         <a-input  v-model:value="formState.authToken"></a-input>
+                    </a-form-item>
+                    <a-form-item label="Save request">
+                        <a-checkbox-group v-model:value="formState.saveRequest" :options="saveRequestOptions" />
                     </a-form-item>
                 </a-form>
             </a-card>

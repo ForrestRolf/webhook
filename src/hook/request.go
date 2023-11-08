@@ -25,6 +25,12 @@ type Request struct {
 	RawRequest *http.Request
 }
 
+type DebugRequest struct {
+	Body    string              `json:"body,omitempty" bson:"body"`
+	Headers map[string][]string `json:"headers,omitempty" bson:"headers"`
+	Query   map[string][]string `json:"query,omitempty" bson:"query"`
+}
+
 func (r *Request) ParseJSONPayload() error {
 	decoder := json.NewDecoder(bytes.NewReader(r.Body))
 	decoder.UseNumber()
@@ -92,4 +98,9 @@ func (r *Request) ParseFormPayload() error {
 	}
 
 	return nil
+}
+
+func (r *DebugRequest) ToJson() string {
+	str, _ := json.Marshal(r)
+	return string(str)
 }
