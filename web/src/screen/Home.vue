@@ -55,7 +55,7 @@ const filteredHooks = computed(() => {
 
 const fileList = ref([])
 const uploadUrl = computed(() => {
-    return `${location.protocol}//${location.host}/import`
+    return `${import.meta.env.VITE_API_URL || "/api"}/import`
 })
 
 const formatHookLink = (hook) => {
