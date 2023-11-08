@@ -23,7 +23,7 @@ jobs:
       - run: cd web && npm install &&  npm run build
       - uses: actions/cache/save@v3
         with:
-          path: /dist
+          path: web/dist
           key: web-dist-${{ github.event.release.tag_name }}
 
   webhook:
@@ -42,7 +42,7 @@ jobs:
       - uses: actions/cache/restore@v3
         id: cache
         with:
-          path: /web/dist
+          path: web/dist
           key: web-dist-${{ github.event.release.tag_name }}
           fail-on-cache-miss: true
 
