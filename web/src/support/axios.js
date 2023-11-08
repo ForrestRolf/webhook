@@ -2,7 +2,7 @@ import axios from 'axios'
 import {Notification} from "./message.js";
 
 const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "/",
+    baseURL: import.meta.env.VITE_API_URL || "/api",
     timeout: 1000 * 60,
     withCredentials: false,
 })

@@ -16,6 +16,8 @@ type Arguments struct {
 	BindPort           int
 	MongoConnectionUri string
 	Database           string
+	BasicAuthUserName  string
+	BasicAuthPassword  string
 }
 
 func connectMongo(args *Arguments) *mongo.Client {
@@ -29,7 +31,7 @@ func connectMongo(args *Arguments) *mongo.Client {
 	return client
 }
 
-func Setup(router *gin.Engine, args *Arguments) {
+func Setup(router *gin.Engine, args *Arguments) *gin.RouterGroup {
 	response := src.NewResponse()
 	logger := GetLogger(args)
 
@@ -38,19 +40,28 @@ func Setup(router *gin.Engine, args *Arguments) {
 	logsClient := model.NewLogClient(mongoClient, args.Database)
 
 	w := handle.Webhook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger}
-	router.GET("/webhook", w.Query)
-	router.POST("/webhook", w.Store)
-	router.GET("/webhook/:id", w.Detail)
-	router.PUT("/webhook/:id", w.Update)
-	router.DELETE("/webhook/:id", w.Delete)
-	router.PUT("/webhook/:id/enable", w.Enable)
-	router.PUT("/webhook/:id/disable", w.Disable)
-	router.POST("/webhook/:id/duplicate", w.Duplicate)
-	router.POST("/import", w.Import)
+
+	r := router.Group("/api")
+	if args.BasicAuthUserName != "" && args.BasicAuthPassword != "" {
+		r = router.Group("/api", gin.BasicAuth(gin.Accounts{
+			args.BasicAuthUserName: args.BasicAuthPassword,
+		}))
+	}
+	r.GET("/webhook", w.Query)
+	r.POST("/webhook", w.Store)
+	r.GET("/webhook/:id", w.Detail)
+	r.PUT("/webhook/:id", w.Update)
+	r.DELETE("/webhook/:id", w.Delete)
+	r.PUT("/webhook/:id/enable", w.Enable)
+	r.PUT("/webhook/:id/disable", w.Disable)
+	r.POST("/webhook/:id/duplicate", w.Duplicate)
+	r.POST("/import", w.Import)
 
 	h := handle.Hook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger, LogModel: logsClient}
 	router.Any("/hook/:id", h.HandleHook)
 
 	l := handle.Log{MongoClient: mongoClient, Model: logsClient, Response: response}
-	router.GET("/logs", l.Query)
+	r.GET("/logs", l.Query)
+
+	return r
 }

@@ -25,8 +25,5 @@ func GetLogger(args *Arguments) *logrus.Logger {
 	logger.SetLevel(level)
 	logger.SetFormatter(&logrus.JSONFormatter{})
 
-	logger.WithFields(logrus.Fields{
-		"args": args,
-	}).Info("Given options")
 	return logger
 }

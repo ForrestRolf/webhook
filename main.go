@@ -41,22 +41,23 @@ func runServer(args support.Arguments) error {
 	if args.LogLevel != "debug" && args.LogLevel != "trace" {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	r := gin.New()
-	r.Use(gin.Recovery())
-	r.Use(support.LoggingMiddleware())
-	r.Use(cors.Default())
+	g := gin.New()
+	g.Use(gin.Recovery())
+	g.Use(support.LoggingMiddleware())
+	g.Use(cors.Default())
 
 	www := EmbedFolder(web, "web/dist")
-	r.Use(static.Serve("/", www))
-	support.Setup(r, &args)
-
-	r.NoRoute(func(c *gin.Context) {
+	g.Use(static.Serve("/", www))
+	support.Setup(g, &args)
+	g.NoRoute(func(c *gin.Context) {
 		c.FileFromFS("index.html", www)
 	})
-	if err := r.Run(fmt.Sprintf("%s:%d", args.BindAddress, args.BindPort)); err != nil {
+
+	listen := fmt.Sprintf("%s:%d", args.BindAddress, args.BindPort)
+	fmt.Println("Listen on " + listen)
+	if err := g.Run(listen); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -78,7 +79,7 @@ func main() {
 			Destination: &args.BindAddress,
 		},
 		cli.IntFlag{
-			Name: "port, p", Value: 9000,
+			Name: "port", Value: 9000,
 			Usage:       "Bind port",
 			Destination: &args.BindPort,
 		},
@@ -91,6 +92,16 @@ func main() {
 		cli.StringFlag{
 			Name: "db", Value: "webhook",
 			Destination: &args.Database,
+		},
+		cli.StringFlag{
+			Name: "user, u", Value: "",
+			Usage:       "Basic auth username",
+			Destination: &args.BasicAuthUserName,
+		},
+		cli.StringFlag{
+			Name: "password, p", Value: "",
+			Usage:       "Basic auth password",
+			Destination: &args.BasicAuthPassword,
 		},
 	}
 
