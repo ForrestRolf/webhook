@@ -1,9 +1,10 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ArrowDownOutlined, DeleteOutlined, NodeExpandOutlined} from "@ant-design/icons-vue"
+import {ArrowDownOutlined, DeleteOutlined, NodeExpandOutlined, BranchesOutlined} from "@ant-design/icons-vue"
 import ShellAction from "./ShellAction.vue";
 import HttpAction from "./HttpAction.vue";
 import CodeEditor from "../CodeEditor.vue";
+import Dispatcher from "./Dispatcher.vue";
 
 const emit = defineEmits(["update:actions"])
 const props = defineProps({
@@ -17,6 +18,12 @@ const props = defineProps({
         type: Boolean,
         default() {
             return false
+        }
+    },
+    arguments: {
+        type: Array,
+        default() {
+            return []
         }
     }
 })
@@ -32,7 +39,8 @@ const actions = computed({
 
 const components = {
     "shell": ShellAction,
-    "http": HttpAction
+    "http": HttpAction,
+    "dispatcher": Dispatcher,
 }
 const handleRemove = (idx) => {
     actions.value.splice(idx, 1)
@@ -46,15 +54,28 @@ const addAction = () => {
     })
     emit("update:actions", actions.value)
 }
-const addOtherAction = (k) => {
+const addOtherAction = (m) => {
+    let attributes = {}
+    switch(m.key) {
+        case "http":
+            attributes = {
+                "method": "POST",
+                "contentType": "application/json",
+                "timeout": 30,
+                "saveResponse": true,
+            }
+            break;
+        case "dispatcher":
+            attributes = {
+                "if": {},
+                "url": "",
+                "method": "POST"
+            }
+            break;
+    }
     actions.value.push({
-        "driver": "http",
-        "attributes": {
-            "method": "POST",
-            "contentType": "application/json",
-            "timeout": 30,
-            "saveResponse": true,
-        }
+        "driver": m.key,
+        "attributes": attributes
     })
     emit("update:actions", actions.value)
 }
@@ -75,7 +96,13 @@ const handleCodeEditor = ({code, lang, onSave}) => {
                     <DeleteOutlined/>
                 </template>
             </a-button>
-            <component :is="components[action.driver]" :disabled="props.disabled" v-model:attributes="actions[i].attributes" :handle-code-editor="handleCodeEditor"></component>
+            <component
+                :is="components[action.driver]"
+                :disabled="props.disabled"
+                v-model:attributes="actions[i].attributes"
+                :arguments="props.arguments"
+                :handle-code-editor="handleCodeEditor">
+            </component>
             <a-divider v-show="i < actions.length - 1">
                 <ArrowDownOutlined/>
             </a-divider>
@@ -88,6 +115,10 @@ const handleCodeEditor = ({code, lang, onSave}) => {
                         <a-menu-item key="http">
                             <NodeExpandOutlined />
                             Add http action
+                        </a-menu-item>
+                        <a-menu-item key="dispatcher">
+                            <BranchesOutlined />
+                            Add dispatcher action
                         </a-menu-item>
                     </a-menu>
                 </template>

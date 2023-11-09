@@ -19,10 +19,12 @@ import EnableOrDisableIt from "../components/EnableOrDisableIt.vue";
 import WebhookLogs from "../components/WebhookLogs.vue";
 import useMessage from "../support/message.js";
 import {download} from "../support/file.js";
+import useClipboard from "../support/clipboard.js";
 
 const router = useRouter()
 const {httpGet} = useAxios()
 const {successMessage, errorMessage} = useMessage()
+const {copyToClipboard} = useClipboard()
 
 const hooks = ref([])
 const selectedHook = ref()
@@ -62,29 +64,7 @@ const formatHookLink = (hook) => {
     return `${location.protocol}//${location.host}/hook/${hook.id}`
 }
 
-const copyToClipboard = (msg) => {
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(msg).then(() => {
-            successMessage("Copied").show()
-        }, () => {
-        })
-    } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = msg;
-        textArea.style.position = "absolute";
-        textArea.style.left = "-999999px";
-        document.body.prepend(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-        } catch (error) {
-            errorMessage("Unable copy link to clipboard", error)
-            alert("Unable copy link to clipboard. \n Please select manually and press ctrl+c to copy: " + msg)
-        } finally {
-            textArea.remove();
-        }
-    }
-}
+
 const copyHookLinkToClipboard = (hook) => {
     hook.copied = true
     copyToClipboard(formatHookLink(hook))

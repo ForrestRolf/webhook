@@ -1,6 +1,8 @@
 <script setup>
-import {FileProtectOutlined} from "@ant-design/icons-vue"
+import {FileProtectOutlined, CopyOutlined} from "@ant-design/icons-vue"
 import {computed} from "vue";
+import useClipboard from "../../support/clipboard.js";
+
 
 const props = defineProps({
     actions: {
@@ -13,6 +15,10 @@ const props = defineProps({
 const actions = computed(() => {
     return props.actions
 })
+const {copyToClipboard} = useClipboard()
+const copy = (url) => {
+    copyToClipboard(url)
+}
 </script>
 
 <template>
@@ -33,6 +39,19 @@ const actions = computed(() => {
                     <span>{{ i + 1 }}.</span>
                     <a-tag color="blue">{{ action.attributes?.method }}</a-tag>
                     <span>{{ action.attributes?.url }}</span>
+                </template>
+
+                <template v-if="action.driver === 'dispatcher'">
+                    <span>{{ i + 1 }}.</span>
+                    <span v-if="Object.keys(action.attributes?.if).length > 0">If </span>
+                    <a-tag v-if="Object.keys(action.attributes?.if).length > 0">
+                        {{ Object.keys(action.attributes?.if).pop() }} = {{ Object.values(action.attributes?.if).pop() }}
+                    </a-tag>
+                    <span v-if="Object.keys(action.attributes?.if).length === 0">Always</span>
+                    <span>re-send to</span>
+                    <a-tag color="#2db7f5" class="copyable" @click="copy(action.attributes?.url)">
+                        {{ action.attributes?.webhookName }}
+                    </a-tag>
                 </template>
             </a-space>
         </a-col>

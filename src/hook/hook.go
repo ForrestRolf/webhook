@@ -29,8 +29,9 @@ const (
 	SourceEntireHeaders  string = "entire-headers"
 )
 const (
-	ActionShellDriver string = "shell"
-	ActionHttpDriver  string = "http"
+	ActionShellDriver      string = "shell"
+	ActionHttpDriver       string = "http"
+	ActionDispatcherDriver string = "dispatcher"
 )
 
 type ParameterNodeError struct {
@@ -253,6 +254,13 @@ type HttpAction struct {
 	AuthToken    string `json:"authToken,omitempty" bson:"authToken"`
 	Timeout      int    `json:"timeout,omitempty" bson:"timeout"`
 	SaveResponse bool   `json:"saveResponse,omitempty" bson:"saveResponse"`
+}
+type DispatcherAction struct {
+	If          map[string]string `json:"if,omitempty" bson:"if"`
+	WebhookId   string            `json:"webhookId,omitempty" bson:"webhookId"`
+	WebhookName string            `bson:"webhookName,omitempty" bson:"webhookName"`
+	Url         string            `json:"url,omitempty" bson:"url"`
+	Method      string            `json:"method,omitempty" bson:"method"`
 }
 
 type Hooks []Hook

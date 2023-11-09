@@ -15,6 +15,12 @@ const props = defineProps({
             return {}
         }
     },
+    arguments: {
+        type: Array,
+        default() {
+            return []
+        }
+    },
     handleCodeEditor: {
         type: Function,
         default() {

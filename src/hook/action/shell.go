@@ -87,6 +87,7 @@ func (s *Shell) Exec(envs []string) {
 		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] [%s] error occurred %s", s.Hook.Name, err))
 		return
 	}
-	s.LogModel.AddLog(s.Hook, fmt.Sprintf("[Shell] Exec successfully. Result: %s", string(out)))
+	s.LogModel.AddLog(s.Hook, "[Shell] Exec successfully")
+	s.LogModel.AddDebugLog(s.Hook, "[Shell] Output: "+string(out))
 	s.removeScriptFile(lookpath)
 }

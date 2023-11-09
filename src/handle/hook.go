@@ -132,7 +132,7 @@ func (h *Hook) HandleHook(c *gin.Context) {
 				var actionShell hook.ShellAction
 				err := mapstructure.Decode(act.Attributes, &actionShell)
 				if err != nil {
-					m := fmt.Sprintf("Could not convert action to struct: %w", err)
+					m := fmt.Sprintf("Could not convert action to struct: %w", err.Error())
 					go h.LogModel.AddErrorLog(&matchedHook, m)
 					h.Logger.Error(m)
 				}
@@ -142,12 +142,22 @@ func (h *Hook) HandleHook(c *gin.Context) {
 				var actionHttp hook.HttpAction
 				err := mapstructure.Decode(act.Attributes, &actionHttp)
 				if err != nil {
-					m := fmt.Sprintf("Could not convert action to struct: %w", err)
+					m := fmt.Sprintf("Could not convert action to struct: %w", err.Error())
 					go h.LogModel.AddErrorLog(&matchedHook, m)
 					h.Logger.Error(m)
 				}
 				h := action.NewHttpAction(&actionHttp, &matchedHook, h.LogModel, h.Model)
 				go h.Send(args)
+			case hook.ActionDispatcherDriver:
+				var dispatcher hook.DispatcherAction
+				err := mapstructure.Decode(act.Attributes, &dispatcher)
+				if err != nil {
+					m := fmt.Sprintf("Could not convert action to struct: %w", err.Error())
+					go h.LogModel.AddErrorLog(&matchedHook, m)
+					h.Logger.Error(m)
+				}
+				d := action.NewDispatcherAction(&dispatcher, &matchedHook, h.LogModel, h.Model, req)
+				go d.Send(args)
 			default:
 				go h.LogModel.AddWarnLog(&matchedHook, fmt.Sprintf("unsupported action: %s", act.Driver))
 			}

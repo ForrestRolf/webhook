@@ -283,7 +283,7 @@ onUnmounted(() => {
         </a-col>
         <a-col :span="8">
             <a-card title="Actions">
-                <Action v-model:actions="actions" :disabled="!stepVisible('actions')"></Action>
+                <Action v-model:actions="actions" :arguments="argument" :disabled="!stepVisible('actions')"></Action>
             </a-card>
             <a-space class="float-rgt">
                 <a-button type="default" class="step-btn" v-show="stepVisible('actions')" @click="handlePrevStep">Prev
