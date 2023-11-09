@@ -35,6 +35,7 @@ const attributes = computed({
 
 const handleCodeChange = (code) => {
     attributes.value.scripts = code
+    emit("update:attributes", attributes.value)
 }
 
 const openCodeEditor = () => {

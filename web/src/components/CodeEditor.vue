@@ -82,10 +82,13 @@ const close = () => {
 const handleSave = () => {
     visible.value = false
     props.onSave(monaco.editor.getEditors().at(0).getValue())
+    dispose()
 }
 const dispose = () => {
     monaco.editor.getEditors().forEach(editor => editor.dispose());
     monaco.editor.getModels().forEach(model => model.dispose());
+    editor.value.dispose()
+    editor.value = null
 }
 const onClose = () => {
 
