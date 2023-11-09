@@ -26,11 +26,11 @@ const trigger = computed({
         </a-tag>
 
         <template v-if="trigger.match.type === 'value'">
-            <span>=</span>
+            <span><span v-if="trigger.match.not" class="notice">!</span>=</span>
             <span>{{trigger.match.value}}</span>
         </template>
         <template v-if="trigger.match.type === 'regex'">
-            <span>~=</span>
+            <span>~=<span v-if="trigger.match.not" class="notice">!</span></span>
             <span>{{trigger.match.regex}}</span>
         </template>
     </a-space>

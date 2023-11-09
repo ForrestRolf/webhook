@@ -53,30 +53,25 @@ const isTriggerGroup = (v) => {
     return keys.includes("and") || keys.includes("or")
 }
 
+const match = {
+    "parameter": {
+        "source": "payload",
+        "name": ""
+    },
+    "type": "value",
+    "value": "",
+    "not": false
+}
 const addMatchRule = () => {
     triggers.value[logic.value].push({
-        "match": {
-            "parameter": {
-                "source": "payload",
-                "name": ""
-            },
-            "type": "value",
-            "value": ""
-        }
+        "match": {...match}
     })
 }
 const addGroupMathRule = () => {
     triggers.value[logic.value].push({
         "and": [
             {
-                "match": {
-                    "parameter": {
-                        "source": "payload",
-                        "name": ""
-                    },
-                    "type": "value",
-                    "value": ""
-                }
+                "match": {...match}
             }
         ]
     })

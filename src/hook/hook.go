@@ -270,6 +270,7 @@ type MatchRule struct {
 	Secret    string   `json:"secret,omitempty"`
 	Value     string   `json:"value,omitempty"`
 	Parameter Argument `json:"parameter,omitempty"`
+	Not       bool     `json:"not,omitempty"`
 }
 
 const (
@@ -327,8 +328,15 @@ func (r MatchRule) Evaluate(req *Request) (bool, error) {
 	if err == nil {
 		switch r.Type {
 		case MatchValue:
+			if r.Not {
+				return !compare(arg, r.Value), nil
+			}
 			return compare(arg, r.Value), nil
 		case MatchRegex:
+			if r.Not {
+				b, err := regexp.MatchString(r.Regex, arg)
+				return !b, err
+			}
 			return regexp.MatchString(r.Regex, arg)
 		}
 	}

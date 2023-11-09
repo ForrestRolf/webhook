@@ -84,12 +84,14 @@ func (h *Hook) HandleHook(c *gin.Context) {
 		err := req.ParseJSONPayload()
 		if err != nil {
 			h.Logger.Errorf("Could not parse json payload [%s][%s] %w", matchedHook.ID, matchedHook.Name, err)
+			go h.LogModel.AddErrorLog(&matchedHook, err.Error())
 		}
 
 	case strings.Contains(req.ContentType, "x-www-form-urlencoded"):
 		err := req.ParseFormPayload()
 		if err != nil {
 			h.Logger.Errorf("Could not parse form payload [%s][%s] %w", matchedHook.ID, matchedHook.Name, err)
+			go h.LogModel.AddErrorLog(&matchedHook, err.Error())
 		}
 
 	default:
@@ -103,10 +105,11 @@ func (h *Hook) HandleHook(c *gin.Context) {
 		ok, err = matchedHook.TriggerRule.Evaluate(req)
 		if err != nil {
 			if !hook.IsParameterNodeError(err) {
-				h.Logger.Errorf("Error occurred while evaluating hook rules. %w", err)
+				h.Logger.Errorf("Error occurred while evaluating hook rules. %w", err.Error())
+				go h.LogModel.AddErrorLog(&matchedHook, err.Error())
 				return
 			}
-			go h.LogModel.AddErrorLog(&matchedHook, fmt.Sprintf("Error occurred while evaluating hook rules. %w", err))
+			go h.LogModel.AddErrorLog(&matchedHook, fmt.Sprintf("Error occurred while evaluating hook rules. %w", err.Error()))
 		}
 	}
 

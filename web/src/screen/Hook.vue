@@ -49,7 +49,8 @@ const match = {
         "name": ""
     },
     "type": "value",
-    "value": ""
+    "value": "",
+    "not": false
 }
 const triggers = ref({
     "and": [

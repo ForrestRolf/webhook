@@ -40,6 +40,7 @@ const handleRemove = () => {
         </a-select>
         <a-input v-model:value="trigger.match.parameter.name" :disabled="props.disabled"></a-input>
 
+        <a-checkbox v-model:checked="trigger.match.not" :disabled="props.disabled">Not</a-checkbox>
         <a-select v-model:value="trigger.match.type" :disabled="props.disabled">
             <a-select-option value="value">Equal value</a-select-option>
             <a-select-option value="regex">Regular match</a-select-option>
