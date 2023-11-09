@@ -2,7 +2,8 @@
 import {computed} from "vue";
 import _ from "lodash"
 import Trigger from "./Trigger.vue";
-import {PlusCircleOutlined} from "@ant-design/icons-vue"
+import {PlusCircleOutlined, CloseCircleOutlined} from "@ant-design/icons-vue"
+import emitter from "../../support/emitter.js";
 
 const props = defineProps({
     triggers: {
@@ -17,6 +18,12 @@ const props = defineProps({
         type: Boolean,
         default() {
             return false
+        }
+    },
+    path: {
+        type: Array,
+        default() {
+            return []
         }
     }
 })
@@ -77,14 +84,25 @@ const addGroupMathRule = () => {
 const handleRemove = (idx) => {
     triggers.value[logic.value].splice(idx, 1)
 }
+
+const generaPath = (idx) => {
+    let keys = Object.keys(triggers.value[logic.value][idx])
+    return _.concat(props.path, [idx, keys[0]])
+}
+const handleRemoveGroup = () => {
+    emitter.emit("trigger-group-removed", props.path)
+}
 </script>
 
 <template>
     <a-row class="trigger-group" :gutter="[12, 12]">
+        <div class="remove" @click="handleRemoveGroup">
+            <CloseCircleOutlined />
+        </div>
         <a-col :span="24" v-for="(trigger, i) in triggers[logic]">
             <Trigger v-if="!isTriggerGroup(trigger)" v-model:trigger="triggers[logic][i]" :disabled="props.disabled"
                      @remove="handleRemove(i)"></Trigger>
-            <TriggerGroup v-else :triggers="trigger" :disabled="props.disabled"></TriggerGroup>
+            <TriggerGroup v-else :triggers="trigger" :disabled="props.disabled" :path="generaPath(i)"></TriggerGroup>
 
             <a-divider v-show="i < triggers[logic].length - 1">
                 <a-radio-group v-model:value="logic" button-style="solid" size="small" :disabled="props.disabled">

@@ -2,11 +2,13 @@
 import {LeftCircleOutlined, PlusCircleOutlined} from "@ant-design/icons-vue"
 import {useRoute, useRouter} from "vue-router";
 import TriggerGroup from "../components/triggers/TriggerGroup.vue";
-import {computed, onMounted, reactive, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Action from "../components/actions/Action.vue";
 import useAxios from "../support/axios.js";
 import PassArgument from "../components/PassArgument.vue";
 import useMessage from "../support/message.js";
+import emitter from "../support/emitter.js";
+import _ from "lodash"
 
 const route = useRoute()
 const router = useRouter()
@@ -41,19 +43,23 @@ const formState = reactive({
     saveRequest: ["body"]
 })
 
+const match = {
+    "parameter": {
+        "source": "payload",
+        "name": ""
+    },
+    "type": "value",
+    "value": ""
+}
 const triggers = ref({
     "and": [
         {
-            "match": {
-                "parameter": {
-                    "source": "payload",
-                    "name": ""
-                },
-                "type": "value",
-                "value": ""
-            }
+            "match": {...match}
         }
     ]
+})
+const hasTriggers = computed(() => {
+    return Object.keys(triggers.value).length > 0
 })
 
 const actions = ref([
@@ -63,9 +69,9 @@ const actions = ref([
     }
 ])
 const saveRequestOptions = ref([
-    { label: 'Body', value: 'body' },
-    { label: 'Header', value: 'header' },
-    { label: 'Query', value: 'query' },
+    {label: 'Body', value: 'body'},
+    {label: 'Header', value: 'header'},
+    {label: 'Query', value: 'query'},
 ])
 
 const argument = ref([])
@@ -129,6 +135,44 @@ const handleRemoveArgument = (i) => {
     argument.value.splice(i, 1)
 }
 
+const startWithAndRule = () => {
+    if (hasTriggers.value) return
+    triggers.value = {
+        "and": [
+            {
+                "match": {...match}
+            }
+        ]
+    }
+}
+const startWithOrRule = () => {
+    if (hasTriggers.value) return
+    triggers.value = {
+        "or": [
+            {
+                "match": {...match}
+            }
+        ]
+    }
+}
+
+const handleRemoveTriggerGroup = (path) => {
+    if (path.length === 1) {
+        triggers.value = {}
+    }
+    path = path.map(n => n + "")
+    path.pop()
+
+    let _triggers = _.cloneDeep(triggers.value)
+    _.unset(_triggers, path)
+
+    //Filter the null left by unset
+    path.pop()
+    _.set(_triggers, path, _.compact(_.get(_triggers, path)))
+
+    triggers.value = _triggers
+}
+
 watch(triggers, () => {
     formState.triggers = triggers.value
 }, {
@@ -147,6 +191,10 @@ watch(argument, () => {
 
 onMounted(() => {
     loadWebhookDetail()
+    emitter.on("trigger-group-removed", handleRemoveTriggerGroup)
+})
+onUnmounted(() => {
+    emitter.off("trigger-group-removed", handleRemoveTriggerGroup)
 })
 </script>
 
@@ -157,7 +205,8 @@ onMounted(() => {
                 <a-button type="text" @click="backToHome">
                     <LeftCircleOutlined class="mini-back-btn"/>
                 </a-button>
-                <a-typography-title :level="3" class="no-margin">{{ isEditMode ? "Edit" : "New" }} Webhook</a-typography-title>
+                <a-typography-title :level="3" class="no-margin">{{ isEditMode ? "Edit" : "New" }} Webhook
+                </a-typography-title>
             </a-space>
         </a-col>
         <a-col :span="6">
@@ -170,11 +219,12 @@ onMounted(() => {
                         <a-textarea :rows="4"
                                     v-model:value="formState.description"></a-textarea>
                     </a-form-item>
-                    <a-form-item label="Auth token" help="If it is empty, it means no authorization. Otherwise, set Authorization=hook [token] in the header.">
-                        <a-input  v-model:value="formState.authToken"></a-input>
+                    <a-form-item label="Auth token"
+                                 help="If it is empty, it means no authorization. Otherwise, set Authorization=hook [token] in the header.">
+                        <a-input v-model:value="formState.authToken"></a-input>
                     </a-form-item>
                     <a-form-item label="Save request">
-                        <a-checkbox-group v-model:value="formState.saveRequest" :options="saveRequestOptions" />
+                        <a-checkbox-group v-model:value="formState.saveRequest" :options="saveRequestOptions"/>
                     </a-form-item>
                 </a-form>
             </a-card>
@@ -184,15 +234,32 @@ onMounted(() => {
         </a-col>
         <a-col :span="10">
             <a-card title="Trigger rules">
-                <TriggerGroup v-model:triggers="triggers" :disabled="!stepVisible('triggers')">
+                <TriggerGroup v-model:triggers="triggers" :disabled="!stepVisible('triggers')" :path="['and']"
+                              v-show="hasTriggers">
 
                 </TriggerGroup>
+                <a-space v-show="!hasTriggers">
+                    <a-button @click="startWithAndRule">
+                        <template #icon>
+                            <PlusCircleOutlined/>
+                        </template>
+                        Start with AND
+                    </a-button>
+                    <span>OR</span>
+                    <a-button @click="startWithOrRule">
+                        <template #icon>
+                            <PlusCircleOutlined/>
+                        </template>
+                        Start with OR
+                    </a-button>
+                </a-space>
             </a-card>
             <br/>
             <a-card title="Arguments">
                 <a-row :gutter="[12, 12]">
                     <a-col :span="24" v-for="(arg, i) in argument">
-                        <PassArgument v-model:argument="argument[i]" @remove="handleRemoveArgument(i)" :disabled="!stepVisible('triggers')"></PassArgument>
+                        <PassArgument v-model:argument="argument[i]" @remove="handleRemoveArgument(i)"
+                                      :disabled="!stepVisible('triggers')"></PassArgument>
                     </a-col>
                     <a-col :span="24">
                         <a-button @click="addArgument" :disabled="!stepVisible('triggers')">
