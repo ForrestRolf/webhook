@@ -62,6 +62,7 @@ func Setup(router *gin.Engine, args *Arguments) *gin.RouterGroup {
 
 	l := handle.Log{MongoClient: mongoClient, Model: logsClient, Response: response}
 	r.GET("/logs", l.Query)
+	r.DELETE("/logs", l.Clear)
 
 	return r
 }

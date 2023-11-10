@@ -143,6 +143,16 @@ func (l *LogClient) QueryLogs(id string, limit int64) ([]Log, error) {
 	return logs, nil
 }
 
+func (l *LogClient) ClearLogs(days int) (int64, error) {
+	t := time.Now().Add(time.Duration(-days*24) * time.Hour)
+	filter := bson.D{{"created", bson.D{{"$lt", primitive.NewDateTimeFromTime(t)}}}}
+	results, err := l.logCollection.DeleteMany(context.TODO(), filter)
+	if err != nil {
+		return 0, err
+	}
+	return results.DeletedCount, nil
+}
+
 func (w *WebhookLogClient) AddErrorLog(msg string) {
 	w.client.NewWebhookLog(w.hook, msg, LogLevelError)
 }

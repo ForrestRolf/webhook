@@ -27,3 +27,13 @@ func (l *Log) Query(c *gin.Context) {
 	}
 	l.Response.Success(c, logs, "OK")
 }
+
+func (l *Log) Clear(c *gin.Context) {
+	count, err := l.Model.ClearLogs(30)
+
+	if err != nil {
+		l.Response.Fail(c, err.Error(), nil)
+		return
+	}
+	l.Response.Success(c, count, "")
+}
