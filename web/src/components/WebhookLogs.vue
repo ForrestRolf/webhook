@@ -63,6 +63,7 @@ const columns = ref([
         title: 'Message',
         dataIndex: 'message',
         key: 'message',
+        width: "70%"
     },
     {
         title: "Date",

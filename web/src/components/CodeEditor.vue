@@ -1,27 +1,17 @@
 <script setup>
-import {nextTick, ref} from "vue";
+import {computed, nextTick, ref} from "vue";
 import {SaveOutlined} from "@ant-design/icons-vue"
 
 import * as monaco from 'monaco-editor'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
-import CssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
-import HtmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
-import TsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
+import ShellCompletionProvider from '../monaco/shell-completion-provider.js'
 
+monaco.languages.registerCompletionItemProvider("shell", ShellCompletionProvider(monaco))
 self.MonacoEnvironment = {
     getWorker(_, label) {
         if (label === 'json') {
             return new JsonWorker()
-        }
-        if (label === 'css' || label === 'scss' || label === 'less') {
-            return new CssWorker()
-        }
-        if (label === 'html' || label === 'handlebars' || label === 'razor') {
-            return new HtmlWorker()
-        }
-        if (label === 'typescript' || label === 'javascript') {
-            return new TsWorker()
         }
         return new EditorWorker()
     }
@@ -67,6 +57,18 @@ const props = defineProps({
         }
     }
 })
+
+const title = computed(() => {
+    const lang = editor.value?.getModel()?.getLanguageId()
+    const label = {
+        "shell": "Shell",
+        "json": "JSON",
+        "plaintext": "Text",
+        "xml": "XML"
+    }
+    return `${label[lang]} Editor`
+})
+
 const open = (lang, code) => {
     visible.value = true
 
@@ -99,7 +101,7 @@ defineExpose({open, close, setContent, setOptions, setLanguage})
 
 <template>
     <a-drawer
-        title="Code Editor"
+        :title="title"
         placement="bottom"
         :closable="false"
         :open="visible"
