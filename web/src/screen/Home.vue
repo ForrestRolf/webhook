@@ -21,6 +21,7 @@ import WebhookLogs from "../components/WebhookLogs.vue";
 import useMessage from "../support/message.js";
 import {download} from "../support/file.js";
 import useClipboard from "../support/clipboard.js";
+import CodeEditor from "../components/CodeEditor.vue";
 
 const router = useRouter()
 const {httpGet} = useAxios()
@@ -32,6 +33,7 @@ const selectedHook = ref()
 const logs = ref()
 const loading = ref(true)
 const keyword = ref(null)
+const codeEditor = ref()
 
 const gotoHook = () => {
     router.push({name: "hooks"})
@@ -104,6 +106,9 @@ const onUploadFileChange = ({file}) => {
 
 const gotoEdit = (hook) => {
     router.push({name: "hooks", query: {id: hook.id}})
+}
+const onCodePreview = ({lang, code}) => {
+    codeEditor.value.open(lang, code)
 }
 
 onMounted(() => {
@@ -184,7 +189,7 @@ onMounted(() => {
                 <TriggerGroupPreview :triggers="hook.triggers"></TriggerGroupPreview>
             </a-col>
             <a-col :span="5">
-                <ActionPreview :actions="hook.actions"></ActionPreview>
+                <ActionPreview :actions="hook.actions" @code-preview="onCodePreview"></ActionPreview>
             </a-col>
             <a-col :span="1">
                 <EnableOrDisableIt :id="hook.id" :enabled="hook.enabled" @changed="fetchWebhooks"></EnableOrDisableIt>
@@ -219,6 +224,7 @@ onMounted(() => {
         </a-row>
 
         <WebhookLogs ref="logs" :webhook-id="selectedHook"></WebhookLogs>
+        <CodeEditor ref="codeEditor" read-only></CodeEditor>
     </div>
 </template>
 

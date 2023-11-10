@@ -17,12 +17,13 @@ self.MonacoEnvironment = {
     }
 }
 const editor = ref()
-const initCodeEditor = (id, lang, initCode) => {
+const initCodeEditor = (id, lang, initCode, readOnly) => {
     if (editor.value) return
     editor.value = monaco.editor.create(document.getElementById(id), {
         value: initCode || "",
         language: lang || "shell",
-        automaticLayout: true
+        automaticLayout: true,
+        readOnly: readOnly
     });
 }
 const setContent = (code) => {
@@ -55,6 +56,12 @@ const props = defineProps({
             return () => {
             }
         }
+    },
+    readOnly: {
+        type: Boolean,
+        default() {
+            return false
+        }
     }
 })
 
@@ -66,20 +73,37 @@ const title = computed(() => {
         "plaintext": "Text",
         "xml": "XML"
     }
-    return `${label[lang]} Editor`
+    return label[lang] + (props.readOnly ? "" : " Editor")
+})
+const drawerConfig = computed(() => {
+    if (props.readOnly) {
+        return {
+            width: "50%",
+            height: "50%",
+            placement: "right",
+            closable: true,
+        }
+    }
+    return {
+        width: "100%",
+        height: "100%",
+        placement: "bottom",
+        closable: false,
+    }
 })
 
 const open = (lang, code) => {
     visible.value = true
 
     nextTick(() => {
-        initCodeEditor(props.id, lang, code)
+        initCodeEditor(props.id, lang, code, props.readOnly)
         setLanguage(lang)
         setContent(code)
     })
 }
 const close = () => {
     visible.value = false
+    dispose()
 }
 const handleSave = () => {
     visible.value = false
@@ -93,7 +117,7 @@ const dispose = () => {
     editor.value = null
 }
 const onClose = () => {
-
+    close()
 }
 
 defineExpose({open, close, setContent, setOptions, setLanguage})
@@ -102,18 +126,18 @@ defineExpose({open, close, setContent, setOptions, setLanguage})
 <template>
     <a-drawer
         :title="title"
-        placement="bottom"
-        :closable="false"
+        :placement="drawerConfig.placement"
+        :closable="drawerConfig.closable"
         :open="visible"
-        width="100%"
-        height="100%"
+        :width="drawerConfig.width"
+        :height="drawerConfig.height"
         @close="onClose"
     >
         <div :id="props.id" style="width: 100%;height: 100%;"></div>
 
         <template #extra>
             <a-space>
-                <a-button @click="handleSave" type="primary">
+                <a-button @click="handleSave" type="primary" v-show="!props.readOnly">
                     <template #icon>
                         <SaveOutlined/>
                     </template>

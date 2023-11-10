@@ -1,9 +1,9 @@
 <script setup>
-import {FileProtectOutlined, CopyOutlined} from "@ant-design/icons-vue"
+import {FileTextOutlined, CopyOutlined} from "@ant-design/icons-vue"
 import {computed} from "vue";
 import useClipboard from "../../support/clipboard.js";
 
-
+const emit = defineEmits(["codePreview"])
 const props = defineProps({
     actions: {
         type: Array,
@@ -19,6 +19,12 @@ const {copyToClipboard} = useClipboard()
 const copy = (url) => {
     copyToClipboard(url)
 }
+const handleOpenCodePreview = (lang, code) => {
+    emit("codePreview", {
+        lang,
+        code
+    })
+}
 </script>
 
 <template>
@@ -28,12 +34,11 @@ const copy = (url) => {
                 <template v-if="action.driver === 'shell'">
                     <span>{{ i + 1 }}.</span>
                     <span>Exec shell in directory: {{ action.attributes?.workingDirectory }}</span>
-                    <a-tooltip>
-                        <template #title>{{ action.attributes?.scripts }}</template>
-                        <a-tag color="orange">
-                            <FileProtectOutlined/>
-                        </a-tag>
-                    </a-tooltip>
+                    <a-button @click="handleOpenCodePreview('shell', action.attributes?.scripts)" type="text">
+                        <template #icon>
+                            <FileTextOutlined />
+                        </template>
+                    </a-button>
                 </template>
                 <template v-if="action.driver === 'http'">
                     <span>{{ i + 1 }}.</span>
