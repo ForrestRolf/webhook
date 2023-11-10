@@ -237,6 +237,7 @@ type Hook struct {
 	TriggerRule           *Rules     `json:"trigger_rule,omitempty"`
 	Actions               *[]Action  `json:"actions,omitempty"`
 	PassArgumentsToAction []Argument `json:"pass_arguments_to_action,omitempty"`
+	Debug                 bool       `json:"debug,omitempty"`
 }
 type Action struct {
 	Driver     string                 `json:"driver,omitempty"`

@@ -7,7 +7,8 @@ import {
     InfoCircleOutlined,
     CheckOutlined,
     CloudDownloadOutlined,
-    CloudUploadOutlined
+    CloudUploadOutlined,
+    SyncOutlined
 } from '@ant-design/icons-vue';
 import {useRouter} from "vue-router";
 import useAxios from "../support/axios.js";
@@ -122,6 +123,12 @@ onMounted(() => {
             </a-col>
             <a-col :span="12" class="txt-rgt">
                 <a-space>
+                    <a-button @click="fetchWebhooks">
+                        <template #icon>
+                            <SyncOutlined />
+                        </template>
+                    </a-button>
+                    <a-divider type="vertical" />
                     <a-upload
                         v-model:file-list="fileList"
                         name="file"

@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"math/rand"
 	"time"
 	"webhook/src/hook"
 )
@@ -16,12 +17,27 @@ type LogClient struct {
 	logCollection *mongo.Collection
 }
 
+type WebhookLogClient struct {
+	client *LogClient
+	hook   *hook.Hook
+}
+
+type ActionLogClient struct {
+	id     string
+	driver string
+	client *LogClient
+	hook   *hook.Hook
+}
+
 type Log struct {
-	WebhookId   string             `json:"webhookId" bson:"webhookId"`
-	WebhookName string             `json:"webhookName" bson:"webhookName"`
-	Message     string             `json:"message" bson:"message"`
-	Level       string             `json:"level" bson:"level"`
-	Created     primitive.DateTime `json:"created" bson:"created"`
+	Type         string             `json:"type,omitempty" bson:"type"`
+	LogId        string             `json:"logId,omitempty" bson:"logId"`
+	WebhookId    string             `json:"webhookId" bson:"webhookId"`
+	WebhookName  string             `json:"webhookName" bson:"webhookName"`
+	Message      string             `json:"message" bson:"message"`
+	Level        string             `json:"level" bson:"level"`
+	Created      primitive.DateTime `json:"created" bson:"created"`
+	ActionDriver string             `json:"actionDriver,omitempty" bson:"actionDriver"`
 }
 
 const (
@@ -31,6 +47,12 @@ const (
 	LogLevelDebug string = "debug"
 	LogLevelOk    string = "OK"
 )
+const (
+	LogTypeWebhook string = "webhook"
+	LogTypeAction  string = "action"
+)
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
 func NewLogClient(client *mongo.Client, db string) *LogClient {
 	return &LogClient{
@@ -39,38 +61,52 @@ func NewLogClient(client *mongo.Client, db string) *LogClient {
 	}
 }
 
-func (l *LogClient) newLog(webhook *hook.Hook, msg string, level string) {
+func NewWebhookLogClient(client *LogClient, hook *hook.Hook) *WebhookLogClient {
+	return &WebhookLogClient{
+		client: client,
+		hook:   hook,
+	}
+}
+
+func NewActionLogClient(driver string, logId string, client *LogClient, hook *hook.Hook) *ActionLogClient {
+	return &ActionLogClient{
+		id:     logId,
+		driver: driver,
+		client: client,
+		hook:   hook,
+	}
+}
+
+func (l *LogClient) NewLog(log Log) {
+	_, err := l.logCollection.InsertOne(context.TODO(), log)
+	if err != nil {
+		logrus.Errorf("Could not save log: %s", err.Error())
+	}
+}
+func (l *LogClient) NewWebhookLog(webhook *hook.Hook, msg string, level string) {
 	var log = Log{
+		Type:        LogTypeWebhook,
+		LogId:       webhook.Name,
 		WebhookId:   webhook.ID,
 		WebhookName: webhook.Name,
 		Message:     msg,
 		Level:       level,
 		Created:     primitive.NewDateTimeFromTime(time.Now()),
 	}
-	_, err := l.logCollection.InsertOne(context.TODO(), log)
-	if err != nil {
-		logrus.Errorf("Could not save log: %w", err)
+	l.NewLog(log)
+}
+func (l *LogClient) NewActionLog(driver string, logId string, webhook *hook.Hook, msg string, level string) {
+	var log = Log{
+		Type:         LogTypeAction,
+		LogId:        "a-" + logId,
+		WebhookId:    webhook.ID,
+		WebhookName:  webhook.Name,
+		Message:      msg,
+		Level:        level,
+		Created:      primitive.NewDateTimeFromTime(time.Now()),
+		ActionDriver: driver,
 	}
-}
-
-func (l *LogClient) AddErrorLog(webhook *hook.Hook, msg string) {
-	l.newLog(webhook, msg, LogLevelError)
-}
-
-func (l *LogClient) AddWarnLog(webhook *hook.Hook, msg string) {
-	l.newLog(webhook, msg, LogLevelWarn)
-}
-
-func (l *LogClient) AddInfoLog(webhook *hook.Hook, msg string) {
-	l.newLog(webhook, msg, LogLevelInfo)
-}
-
-func (l *LogClient) AddDebugLog(webhook *hook.Hook, msg string) {
-	l.newLog(webhook, msg, LogLevelDebug)
-}
-
-func (l *LogClient) AddLog(webhook *hook.Hook, msg string) {
-	l.newLog(webhook, msg, LogLevelOk)
+	l.NewLog(log)
 }
 
 func (l *LogClient) ParseErrors(errors []error) string {
@@ -79,6 +115,14 @@ func (l *LogClient) ParseErrors(errors []error) string {
 		e += "," + err.Error()
 	}
 	return e
+}
+
+func (l *LogClient) GenerateLogId(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
 
 func (l *LogClient) QueryLogs(id string, limit int64) ([]Log, error) {
@@ -97,4 +141,40 @@ func (l *LogClient) QueryLogs(id string, limit int64) ([]Log, error) {
 		return logs, err
 	}
 	return logs, nil
+}
+
+func (w *WebhookLogClient) AddErrorLog(msg string) {
+	w.client.NewWebhookLog(w.hook, msg, LogLevelError)
+}
+func (w *WebhookLogClient) AddWarnLog(msg string) {
+	w.client.NewWebhookLog(w.hook, msg, LogLevelWarn)
+}
+func (w *WebhookLogClient) AddInfoLog(msg string) {
+	w.client.NewWebhookLog(w.hook, msg, LogLevelInfo)
+}
+func (w *WebhookLogClient) AddDebugLog(msg string) {
+	if w.hook.Debug {
+		w.client.NewWebhookLog(w.hook, msg, LogLevelDebug)
+	}
+}
+func (w *WebhookLogClient) AddLog(msg string) {
+	w.client.NewWebhookLog(w.hook, msg, LogLevelOk)
+}
+
+func (l *ActionLogClient) AddLog(msg string) {
+	l.client.NewActionLog(l.driver, l.id, l.hook, msg, LogLevelOk)
+}
+func (l *ActionLogClient) AddErrorLog(msg string) {
+	l.client.NewActionLog(l.driver, l.id, l.hook, msg, LogLevelError)
+}
+func (l *ActionLogClient) AddWarnLog(msg string) {
+	l.client.NewActionLog(l.driver, l.id, l.hook, msg, LogLevelWarn)
+}
+func (l *ActionLogClient) AddInfoLog(msg string) {
+	l.client.NewActionLog(l.driver, l.id, l.hook, msg, LogLevelInfo)
+}
+func (l *ActionLogClient) AddDebugLog(msg string) {
+	if l.hook.Debug {
+		l.client.NewActionLog(l.driver, l.id, l.hook, msg, LogLevelDebug)
+	}
 }

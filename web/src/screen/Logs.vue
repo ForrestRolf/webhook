@@ -16,14 +16,20 @@ const columns = ref([
         key: 'webhookName',
     },
     {
-        title: 'Webhook ID',
-        dataIndex: 'webhookId',
-        key: 'webhookId',
+        title: 'Log ID',
+        dataIndex: 'logId',
+        key: 'logId',
     },
     {
         title: 'Message',
         dataIndex: 'message',
         key: 'message',
+        width: "70%",
+    },
+    {
+        title: 'Action driver',
+        dataIndex: 'actionDriver',
+        key: 'actionDriver',
     },
     {
         title: "Date",

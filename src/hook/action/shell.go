@@ -6,7 +6,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 	"webhook/src/hook"
 	"webhook/src/model"
 )
@@ -18,11 +20,11 @@ const (
 type Shell struct {
 	Hook         *hook.Hook
 	Action       *hook.ShellAction
-	LogModel     *model.LogClient
+	LogModel     *model.ActionLogClient
 	WebhookModel *model.WebhookClient
 }
 
-func NewShellAction(action *hook.ShellAction, hook *hook.Hook, log *model.LogClient, webhook *model.WebhookClient) *Shell {
+func NewShellAction(action *hook.ShellAction, hook *hook.Hook, webhook *model.WebhookClient, log *model.ActionLogClient) *Shell {
 	return &Shell{
 		Action:       action,
 		Hook:         hook,
@@ -38,20 +40,20 @@ func (s *Shell) writeScriptFile(path string, content string) bool {
 	}
 	err := ioutil.WriteFile(path, []byte(_content), 0755)
 	if err != nil {
-		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] Could not write script file. %s", err))
+		s.LogModel.AddErrorLog(fmt.Sprintf("Could not write script file. %s", err.Error()))
 		return false
 	}
-	s.LogModel.AddLog(s.Hook, fmt.Sprintf("[Shell] Script file created. [%s]", path))
+	s.LogModel.AddLog(fmt.Sprintf("Script file created. [%s]", path))
 	return true
 }
 
 func (s *Shell) removeScriptFile(path string) bool {
 	err := os.Remove(path)
 	if err != nil {
-		s.LogModel.AddWarnLog(s.Hook, fmt.Sprintf("[Shell] [%s] error removing file %s [%s]", s.Hook.ID, path, err))
+		s.LogModel.AddWarnLog(fmt.Sprintf("[%s] error removing file %s [%s]", s.Hook.ID, path, err.Error()))
 		return false
 	}
-	s.LogModel.AddLog(s.Hook, fmt.Sprintf("[Shell] Script file removed. [%s]", path))
+	s.LogModel.AddLog(fmt.Sprintf("Script file removed. [%s]", path))
 	return true
 }
 
@@ -60,9 +62,11 @@ func (s *Shell) tryAddChmodX(path string) {
 }
 
 func (s *Shell) Exec(envs []string) {
+	start := time.Now().UnixMilli()
+
 	if _, err := os.Stat(s.Action.WorkingDirectory); err != nil {
 		if os.IsNotExist(err) {
-			s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] Working directory not exists. %s", s.Action.WorkingDirectory))
+			s.LogModel.AddErrorLog(fmt.Sprintf("Working directory not exists. %s", s.Action.WorkingDirectory))
 			return
 		}
 	}
@@ -75,7 +79,7 @@ func (s *Shell) Exec(envs []string) {
 
 	cmdPath, err := exec.LookPath(lookpath)
 	if err != nil {
-		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] Could not find cmd path. %w", err))
+		s.LogModel.AddErrorLog(fmt.Sprintf("Could not find cmd path. %s", err.Error()))
 		return
 	}
 	cmd := exec.Command(cmdPath)
@@ -84,10 +88,12 @@ func (s *Shell) Exec(envs []string) {
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		s.LogModel.AddErrorLog(s.Hook, fmt.Sprintf("[Shell] [%s] error occurred %s", s.Hook.Name, err))
+		s.LogModel.AddErrorLog(fmt.Sprintf("[%s] error occurred %s", s.Hook.Name, err.Error()))
 		return
 	}
-	s.LogModel.AddLog(s.Hook, "[Shell] Exec successfully")
-	s.LogModel.AddDebugLog(s.Hook, "[Shell] Output: "+string(out))
 	s.removeScriptFile(lookpath)
+
+	end := time.Now().UnixMilli()
+	s.LogModel.AddLog("Exec successfully. took: " + strconv.FormatInt(end-start, 10) + "ms")
+	s.LogModel.AddDebugLog("Output: " + string(out))
 }

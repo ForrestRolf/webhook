@@ -40,6 +40,7 @@ const formState = reactive({
     triggers: {},
     actions: [],
     passArgumentsToAction: [],
+    debug: false,
     saveRequest: ["body"]
 })
 
@@ -114,7 +115,7 @@ const loadWebhookDetail = () => {
     if (!isEditMode) return
     if (!webhookId.value) return
     httpGet(`/webhook/${webhookId.value}`).exec().then(({payload}) => {
-        for (let f of ["name", "description", "actions", "triggers", "passArgumentsToAction", "authToken", "saveRequest"]) {
+        for (let f of ["name", "description", "actions", "triggers", "passArgumentsToAction", "authToken", "saveRequest", "debug"]) {
             formState[f] = payload[f]
         }
         triggers.value = payload.triggers
@@ -224,7 +225,12 @@ onUnmounted(() => {
                                  help="If it is empty, it means no authorization. Otherwise, set Authorization=hook [token] in the header.">
                         <a-input v-model:value="formState.authToken"></a-input>
                     </a-form-item>
-                    <a-form-item label="Save request">
+                    <a-form-item label="Debug">
+                        <a-checkbox v-model:checked="formState.debug">
+                            When enabled, more data will be logged in the log
+                        </a-checkbox>
+                    </a-form-item>
+                    <a-form-item label="Save request" v-show="formState.debug">
                         <a-checkbox-group v-model:value="formState.saveRequest" :options="saveRequestOptions"/>
                     </a-form-item>
                 </a-form>

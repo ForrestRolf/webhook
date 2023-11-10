@@ -1,6 +1,17 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ArrowDownOutlined, DeleteOutlined, NodeExpandOutlined, BranchesOutlined} from "@ant-design/icons-vue"
+import {
+    ArrowDownOutlined,
+    DeleteOutlined,
+    NodeExpandOutlined,
+    BranchesOutlined,
+    CodeOutlined,
+    SlackOutlined,
+    MailOutlined,
+    WechatOutlined,
+    DingdingOutlined,
+    SolutionOutlined
+} from "@ant-design/icons-vue"
 import ShellAction from "./ShellAction.vue";
 import HttpAction from "./HttpAction.vue";
 import CodeEditor from "../CodeEditor.vue";
@@ -45,7 +56,7 @@ const components = {
 const handleRemove = (idx) => {
     actions.value.splice(idx, 1)
 }
-const addAction = () => {
+const addShellAction = () => {
     actions.value.push({
         "driver": "shell",
         "attributes": {
@@ -54,30 +65,34 @@ const addAction = () => {
     })
     emit("update:actions", actions.value)
 }
-const addOtherAction = (m) => {
-    let attributes = {}
-    switch(m.key) {
-        case "http":
-            attributes = {
-                "method": "POST",
-                "contentType": "application/json",
-                "timeout": 30,
-                "saveResponse": true,
-            }
-            break;
-        case "dispatcher":
-            attributes = {
-                "if": {},
-                "url": "",
-                "method": "POST"
-            }
-            break;
-    }
+const addHttpAction = () => {
     actions.value.push({
-        "driver": m.key,
-        "attributes": attributes
+        "driver": "http",
+        "attributes": {
+            "method": "POST",
+            "contentType": "application/json",
+            "timeout": 30,
+            "saveResponse": true,
+        }
     })
     emit("update:actions", actions.value)
+}
+const addDispatcherAction = () => {
+    actions.value.push({
+        "driver": "dispatcher",
+        "attributes": {
+            "if": {},
+            "url": "",
+            "method": "POST",
+            "webhookId": "",
+            "webhookName": ""
+        }
+    })
+    emit("update:actions", actions.value)
+}
+
+const addLogOnlyAction = () => {
+
 }
 
 const codeEditor = ref()
@@ -108,21 +123,30 @@ const handleCodeEditor = ({code, lang, onSave}) => {
             </a-divider>
         </a-col>
         <a-col :span="24" class="txt-center" v-show="!props.disabled">
-            <a-dropdown-button @click="addAction">
-                Add shell action
-                <template #overlay>
-                    <a-menu @click="addOtherAction">
-                        <a-menu-item key="http">
-                            <NodeExpandOutlined />
-                            Add http action
-                        </a-menu-item>
-                        <a-menu-item key="dispatcher">
-                            <BranchesOutlined />
-                            Add dispatcher action
-                        </a-menu-item>
-                    </a-menu>
-                </template>
-            </a-dropdown-button>
+            <a-space>
+                <span>Add</span>
+                <a-tooltip title="Shell script">
+                    <a-button type="text" @click="addShellAction"><template #icon><CodeOutlined/></template></a-button>
+                </a-tooltip>
+                <a-tooltip title="HTTP request">
+                    <a-button type="text" @click="addHttpAction"><template #icon><NodeExpandOutlined/></template></a-button>
+                </a-tooltip>
+                <a-tooltip title="Webhook dispatcher">
+                    <a-button type="text" @click="addDispatcherAction"><template #icon><BranchesOutlined/></template></a-button>
+                </a-tooltip>
+                <a-tooltip title="Slack (coming soon)">
+                    <a-button type="text"><template #icon><SlackOutlined /></template></a-button>
+                </a-tooltip>
+                <a-tooltip title="Email (coming soon)">
+                    <a-button type="text"><template #icon><MailOutlined /></template></a-button>
+                </a-tooltip>
+                <a-tooltip title="Wechat (coming soon)">
+                    <a-button type="text"><template #icon><WechatOutlined /></template></a-button>
+                </a-tooltip>
+                <a-tooltip title="Dingding (coming soon)">
+                    <a-button type="text"><template #icon><DingdingOutlined /></template></a-button>
+                </a-tooltip>
+            </a-space>
         </a-col>
 
         <CodeEditor ref="codeEditor" :on-save="onCodeSave"></CodeEditor>
