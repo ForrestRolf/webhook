@@ -176,13 +176,14 @@ onMounted(() => {
                             </template>
                         </a-button>
                     </a-typography-text>
-                    <a-typography-text>{{ hook.description }}</a-typography-text>
-                    <a-tooltip>
+                    <a-typography-text v-if="hook.description">{{ hook.description }}</a-typography-text>
+                    <a-tooltip v-if="hook.authToken">
                         <template #title>Click to copy token</template>
                         <a-tag v-show="hook.authToken" color="pink" class="copyable" @click="copyAuthToken(hook)">
                             Authorization=hook ******
                         </a-tag>
                     </a-tooltip>
+                    <a-tag v-if="hook.debug" color="orange">Debug enabled</a-tag>
                 </a-space>
             </a-col>
             <a-col :span="8">
