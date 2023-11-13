@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/clbanning/mxj"
 	"net/http"
 	"net/url"
 	"unicode"
@@ -95,6 +96,17 @@ func (r *Request) ParseFormPayload() error {
 		if len(v) > 0 {
 			r.Payload[k] = v[0]
 		}
+	}
+
+	return nil
+}
+
+func (r *Request) ParseXMLPayload() error {
+	var err error
+
+	r.Payload, err = mxj.NewMapXmlReader(bytes.NewReader(r.Body))
+	if err != nil {
+		return fmt.Errorf("error parsing XML payload: %+v", err)
 	}
 
 	return nil

@@ -69,35 +69,43 @@ func (h *Hook) HandleHook(c *gin.Context) {
 	req.ParseHeaders(c.Request.Header)
 	req.ParseQuery(c.Request.URL.Query())
 
-	saveReq := &hook.DebugRequest{}
-	if slices.Contains(webhook.SaveRequest, "body") {
-		saveReq.Body = string(req.Body)
+	if matchedHook.Debug {
+		saveReq := &hook.DebugRequest{}
+		if slices.Contains(webhook.SaveRequest, "body") {
+			saveReq.Body = string(req.Body)
+		}
+		if slices.Contains(webhook.SaveRequest, "header") {
+			saveReq.Headers = c.Request.Header
+		}
+		if slices.Contains(webhook.SaveRequest, "query") {
+			saveReq.Query = c.Request.URL.Query()
+		}
+		go hookLogger.AddDebugLog(saveReq.ToJson())
 	}
-	if slices.Contains(webhook.SaveRequest, "header") {
-		saveReq.Headers = c.Request.Header
-	}
-	if slices.Contains(webhook.SaveRequest, "query") {
-		saveReq.Query = c.Request.URL.Query()
-	}
-	go hookLogger.AddDebugLog(saveReq.ToJson())
 
 	switch {
 	case strings.Contains(req.ContentType, "json"):
 		err := req.ParseJSONPayload()
 		if err != nil {
 			h.Logger.Errorf("Could not parse json payload [%s][%s] %s", matchedHook.ID, matchedHook.Name, err.Error())
-			go hookLogger.AddErrorLog(err.Error())
+			go hookLogger.AddErrorLog("Could not parse json payload: " + err.Error())
 		}
-
+	case strings.Contains(req.ContentType, "xml"):
+		err := req.ParseXMLPayload()
+		if err != nil {
+			h.Logger.Errorf("Could not parse XML payload [%s][%s] %s", matchedHook.ID, matchedHook.Name, err.Error())
+			go hookLogger.AddErrorLog("Could not parse XML payload: " + err.Error())
+		}
 	case strings.Contains(req.ContentType, "x-www-form-urlencoded"):
 		err := req.ParseFormPayload()
 		if err != nil {
 			h.Logger.Errorf("Could not parse form payload [%s][%s] %s", matchedHook.ID, matchedHook.Name, err.Error())
-			go hookLogger.AddErrorLog(err.Error())
+			go hookLogger.AddErrorLog("Could not parse form payload: " + err.Error())
 		}
 
 	default:
 		h.Logger.Errorf("[%s][%s] error parsing body payload due to unsupported content type header: %s", matchedHook.ID, matchedHook.Name, req.ContentType)
+		go hookLogger.AddWarnLog("error parsing body payload due to unsupported content type header: " + req.ContentType)
 	}
 
 	var ok bool
