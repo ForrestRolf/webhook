@@ -1,6 +1,7 @@
 import Home from "../screen/Home.vue"
 import Hook from "../screen/Hook.vue"
 import Logs from "../screen/Logs.vue"
+import Template from "../screen/Template.vue";
 
 const routes = [
     {
@@ -25,6 +26,14 @@ const routes = [
         component: Logs,
         meta: {
             menuKey: "logs"
+        }
+    },
+    {
+        name: "templates",
+        path: "/templates",
+        component: Template,
+        meta: {
+            menuKey: "templates"
         }
     }
 ]

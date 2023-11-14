@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
-import {CodeOutlined} from "@ant-design/icons-vue";
+import {CodeOutlined, FileSearchOutlined} from "@ant-design/icons-vue";
+import TemplatePicker from "../TemplatePicker.vue";
 
 const props = defineProps({
     disabled: {
@@ -30,6 +31,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(["update:attributes"])
+const templatePickerRef = ref()
 
 const attributes = computed({
     get() {
@@ -43,26 +45,29 @@ const handleCodeChange = (code) => {
     attributes.value.payload = code
     emit("update:attributes", attributes.value)
 }
-
-const openCodeEditor = () => {
+const lang = computed(() => {
     let mime2language = {
         "text/plain": "plaintext",
         "application/json": "json",
         "application/xml": "xml",
     }
-    let defaultCode = {
-        "plaintext": "",
-        "json": "{}",
-        "xml": "<?xml version=\"1.0\"?>",
-    }
-    let mime = attributes.value.contentType
-    let lang = mime2language[mime] ? mime2language[mime] : "plaintext"
+    return mime2language[attributes.value.contentType] ? mime2language[attributes.value.contentType] : "plaintext"
+})
 
+const openCodeEditor = () => {
     props.handleCodeEditor({
-        lang: lang,
-        code: attributes.value.payload || defaultCode[lang],
+        lang: lang.value,
+        code: attributes.value.payload || defaultCode[lang.value],
         onSave: handleCodeChange
     })
+}
+
+const openTemplatePicker = () => {
+    templatePickerRef.value.open()
+}
+const handleTemplateSelected = (template) => {
+    attributes.value.payload = template.content
+    emit("update:attributes", attributes.value)
 }
 </script>
 
@@ -95,6 +100,13 @@ const openCodeEditor = () => {
                         </template>
                         Open in code editor
                     </a-button>
+                    <a-divider type="vertical"></a-divider>
+                    <a-button size="small" type="text" @click="openTemplatePicker">
+                        <template #icon>
+                            <FileSearchOutlined />
+                        </template>
+                        Start with a template
+                    </a-button>
                 </a-form-item>
                 <a-form-item label="Auth header">
                     <a-input v-model:value="attributes.authToken"></a-input>
@@ -107,6 +119,8 @@ const openCodeEditor = () => {
                 </a-form-item>
             </a-form>
         </a-col>
+
+        <TemplatePicker ref="templatePickerRef" :lang="lang" @selected="handleTemplateSelected"></TemplatePicker>
     </a-row>
 </template>
 

@@ -85,6 +85,7 @@ const generaPath = (idx) => {
     return _.concat(props.path, [idx, keys[0]])
 }
 const handleRemoveGroup = () => {
+    if (props.disabled) return
     emitter.emit("trigger-group-removed", props.path)
 }
 </script>

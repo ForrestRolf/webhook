@@ -12,6 +12,8 @@ For example, if you are using Harbor, you can use webhook to configure a hook se
 * Hook supports authentication
 * Detailed execution logs
 * Debug mode
+* Backup / Restore hooks
+* Script templates
 
 # Dependencies
 * MongoDB

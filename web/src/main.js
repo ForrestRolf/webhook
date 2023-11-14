@@ -7,7 +7,6 @@ import router from "./router"
 import './assets/less/style.less'
 import emitter from "./support/emitter.js";
 
-
 const app = createApp(App)
 app.use(Antd)
 app.use(router)

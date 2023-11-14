@@ -1,7 +1,7 @@
 <script setup>
 import {computed, h, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
-import {NodeExpandOutlined, ExceptionOutlined} from "@ant-design/icons-vue"
+import {NodeExpandOutlined, ExceptionOutlined, CodeOutlined} from "@ant-design/icons-vue"
 
 const route = useRoute()
 const router = useRouter()
@@ -27,6 +27,12 @@ const menus = ref([
         label: 'Logs',
         title: 'Logs',
     },
+    {
+        key: 'templates',
+        icon: () => h(CodeOutlined),
+        label: 'Templates',
+        title: 'Templates',
+    }
 ])
 </script>
 

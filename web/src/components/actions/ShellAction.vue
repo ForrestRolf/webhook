@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
-import {CodeOutlined} from "@ant-design/icons-vue"
+import {CodeOutlined, FileSearchOutlined} from "@ant-design/icons-vue"
+import TemplatePicker from "../TemplatePicker.vue";
 
 const props = defineProps({
     attributes: {
@@ -24,7 +25,8 @@ const props = defineProps({
     handleCodeEditor: {
         type: Function,
         default() {
-            return () => {}
+            return () => {
+            }
         }
     }
 })
@@ -38,6 +40,7 @@ const attributes = computed({
         emit("update:attributes", v)
     }
 })
+const templatePickerRef = ref()
 
 const handleCodeChange = (code) => {
     attributes.value.scripts = code
@@ -50,6 +53,14 @@ const openCodeEditor = () => {
         code: attributes.value.scripts || "#!/bin/bash",
         onSave: handleCodeChange
     })
+}
+
+const openTemplatePicker = () => {
+    templatePickerRef.value.open()
+}
+const handleTemplateSelected = (template) => {
+    attributes.value.scripts = template.content
+    emit("update:attributes", attributes.value)
 }
 </script>
 
@@ -64,13 +75,22 @@ const openCodeEditor = () => {
                     <a-textarea :rows="8" v-model:value="attributes.scripts"></a-textarea>
                     <a-button size="small" type="text" @click="openCodeEditor">
                         <template #icon>
-                            <CodeOutlined />
+                            <CodeOutlined/>
                         </template>
                         Open in code editor
+                    </a-button>
+                    <a-divider type="vertical"></a-divider>
+                    <a-button size="small" type="text" @click="openTemplatePicker">
+                        <template #icon>
+                            <FileSearchOutlined />
+                        </template>
+                        Start with a template
                     </a-button>
                 </a-form-item>
             </a-form>
         </a-col>
+
+        <TemplatePicker ref="templatePickerRef" lang="shell" @selected="handleTemplateSelected"></TemplatePicker>
     </a-row>
 </template>
 

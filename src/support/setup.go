@@ -38,6 +38,7 @@ func Setup(router *gin.Engine, args *Arguments) *gin.RouterGroup {
 	mongoClient := connectMongo(args)
 	webhookClient := model.NewWebhookClient(mongoClient, args.Database)
 	logsClient := model.NewLogClient(mongoClient, args.Database)
+	templateClient := model.NewTemplateClient(mongoClient, args.Database)
 
 	w := handle.Webhook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger}
 
@@ -56,6 +57,13 @@ func Setup(router *gin.Engine, args *Arguments) *gin.RouterGroup {
 	r.PUT("/webhook/:id/disable", w.Disable)
 	r.POST("/webhook/:id/duplicate", w.Duplicate)
 	r.POST("/import", w.Import)
+
+	t := handle.Template{MongoClient: mongoClient, Model: templateClient, Response: response, Logger: logger}
+	r.GET("/template", t.Query)
+	r.POST("/template", t.Store)
+	r.PUT("/template/:id", t.Update)
+	r.DELETE("/template/:id", t.Delete)
+	r.GET("/template/:id", t.Detail)
 
 	h := handle.Hook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger, LogModel: logsClient}
 	router.Any("/hook/:id", h.HandleHook)
