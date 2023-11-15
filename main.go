@@ -16,6 +16,8 @@ import (
 //go:embed web/dist
 var web embed.FS
 
+var version string = "unknown"
+
 type embedFileSystem struct {
 	http.FileSystem
 }
@@ -63,9 +65,18 @@ func runServer(args support.Arguments) error {
 
 func main() {
 	var args support.Arguments
+	cli.VersionFlag = cli.BoolFlag{
+		Name:  "version, v",
+		Usage: "show version",
+	}
+	cli.VersionPrinter = func(c *cli.Context) {
+		fmt.Printf("Version %s\n", c.App.Version)
+	}
 
 	app := cli.NewApp()
 	app.Name = "webhook"
+	app.Usage = "webhook is a lightweight incoming webhook server to run shell commands"
+	app.Version = version
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -113,6 +124,6 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		panic("Fatal Error")
+		panic("Fatal Error: " + err.Error())
 	}
 }

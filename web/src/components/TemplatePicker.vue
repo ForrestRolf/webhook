@@ -74,6 +74,7 @@ defineExpose({open, close})
             <a-col :span="8" v-for="template in templatesByLang">
                 <Gist :template="template" select-mode @gist-click="onSelected"></Gist>
             </a-col>
+            <a-col :span="24" v-if="templatesByLang.length === 0"><a-empty /></a-col>
         </a-row>
     </a-drawer>
 </template>
