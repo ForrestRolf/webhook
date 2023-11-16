@@ -33,6 +33,7 @@ const (
 	ActionHttpDriver       string = "http"
 	ActionDispatcherDriver string = "dispatcher"
 	ActionEmailDriver      string = "email"
+	ActionSlackDriver      string = "slack"
 )
 
 type ParameterNodeError struct {
@@ -270,6 +271,11 @@ type EmailAction struct {
 	Cc        []string `json:"cc,omitempty" bson:"cc"`
 	Subject   string   `json:"subject,omitempty" bson:"subject"`
 	Body      string   `json:"body,omitempty" bson:"body"`
+}
+type SlackAction struct {
+	WebhookUrl string `json:"webhookUrl,omitempty" bson:"webhookUrl"`
+	Message    string `json:"message,omitempty" bson:"message"`
+	Channel    string `json:"channel,omitempty" bson:"channel"`
 }
 
 type Hooks []Hook

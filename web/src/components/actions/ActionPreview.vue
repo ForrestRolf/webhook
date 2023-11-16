@@ -70,6 +70,11 @@ const handleOpenCodePreview = (lang, code) => {
                         </span>
                     </span>
                 </template>
+
+                <template v-if="action.driver === 'slack'">
+                    <span>{{ i + 1 }}.</span>
+                    <span>Send to slack: <a-tag>{{ $filters.slackChannel(action.attributes?.channel) }}</a-tag></span>
+                </template>
             </a-space>
         </a-col>
     </a-row>

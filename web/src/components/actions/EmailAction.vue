@@ -2,7 +2,6 @@
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import useAxios from "../../support/axios.js";
 import {useRoute} from "vue-router";
-import _ from "lodash"
 import {CodeOutlined, FileSearchOutlined} from "@ant-design/icons-vue";
 import TemplatePicker from "../TemplatePicker.vue";
 

@@ -16,6 +16,7 @@ import HttpAction from "./HttpAction.vue";
 import CodeEditor from "../CodeEditor.vue";
 import Dispatcher from "./Dispatcher.vue";
 import EmailAction from "./EmailAction.vue";
+import SlackAction from "./SlackAction.vue";
 
 const emit = defineEmits(["update:actions"])
 const props = defineProps({
@@ -53,6 +54,7 @@ const components = {
     "http": HttpAction,
     "dispatcher": Dispatcher,
     "email": EmailAction,
+    "slack": SlackAction,
 }
 const handleRemove = (idx) => {
     actions.value.splice(idx, 1)
@@ -106,6 +108,17 @@ const addEmailAction = () => {
     emit("update:actions", actions.value)
 }
 
+const addSlackAction = () => {
+    actions.value.push({
+        "driver": "slack",
+        "attributes": {
+            webhookUrl: "",
+            message: "",
+        }
+    })
+    emit("update:actions", actions.value)
+}
+
 const codeEditor = ref()
 const onCodeSave = ref()
 const handleCodeEditor = ({code, lang, onSave}) => {
@@ -145,7 +158,7 @@ const handleCodeEditor = ({code, lang, onSave}) => {
                 <a-tooltip title="Webhook dispatcher">
                     <a-button type="text" @click="addDispatcherAction"><template #icon><BranchesOutlined/></template></a-button>
                 </a-tooltip>
-                <a-tooltip title="Slack (coming soon)">
+                <a-tooltip title="Slack" @click="addSlackAction">
                     <a-button type="text"><template #icon><SlackOutlined /></template></a-button>
                 </a-tooltip>
                 <a-tooltip title="Email" @click="addEmailAction">

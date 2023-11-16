@@ -192,6 +192,16 @@ func (h *Hook) HandleHook(c *gin.Context) {
 				e := action.NewEmailAction(&profile, &email, &matchedHook, h.EmailModel, actionLogger)
 				go e.Send(args)
 
+			case hook.ActionSlackDriver:
+				var slack hook.SlackAction
+				err := mapstructure.Decode(act.Attributes, &slack)
+				if err != nil {
+					go hookLogger.AddErrorLog(fmt.Sprintf("Could not convert action to struct: %s", err.Error()))
+					return
+				}
+				s := action.NewSlackAction(&slack, &matchedHook, actionLogger)
+				go s.Send(args)
+
 			default:
 				go hookLogger.AddWarnLog(fmt.Sprintf("unsupported action: %s", act.Driver))
 			}
