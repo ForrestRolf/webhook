@@ -4,6 +4,7 @@ import {SaveOutlined} from "@ant-design/icons-vue"
 import * as monaco from 'monaco-editor'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
+import HtmlWorker from 'monaco-editor/esm/vs/language/html/html.worker.js?worker'
 import ShellCompletionProvider from '../monaco/shell-completion-provider.js'
 
 monaco.languages.registerCompletionItemProvider("shell", ShellCompletionProvider(monaco))
@@ -11,6 +12,9 @@ self.MonacoEnvironment = {
     getWorker(_, label) {
         if (label === 'json') {
             return new JsonWorker()
+        }
+        if (label === 'html') {
+            return new HtmlWorker()
         }
         return new EditorWorker()
     }
@@ -83,7 +87,8 @@ const title = computed(() => {
         "shell": "Shell",
         "json": "JSON",
         "plaintext": "Text",
-        "xml": "XML"
+        "xml": "XML",
+        "html": "HTML"
     }
     return label[lang] + (props.readOnly ? "" : " Editor")
 })

@@ -82,6 +82,20 @@ main.ant-layout-content {
   border: 1px solid #299cdb;
   border-radius: 5px;
   padding: 10px;
+  padding-top: 30px;
+  position: relative;
+  overflow: hidden;
+
+  .type-label {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background-color: #299cdb;
+    padding: 5px 20px;
+    color: #fff;
+    border-radius: 5px;
+    height: 30px;
+  }
 }
 
 .txt-center {
@@ -114,6 +128,14 @@ main.ant-layout-content {
 
 .margin-lft {
   margin-left: 12px !important;
+}
+
+.pad-lft {
+  padding-left: 12px;
+}
+
+.mgr-top {
+  margin-top: 12px;
 }
 
 .ant-select {
@@ -155,4 +177,12 @@ main.ant-layout-content {
 
 .webhook-select {
   width: 60%;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
 }

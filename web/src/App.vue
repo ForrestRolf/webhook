@@ -1,7 +1,7 @@
 <script setup>
 import {computed, h, ref, watch} from "vue";
 import {useRoute, useRouter} from "vue-router";
-import {NodeExpandOutlined, ExceptionOutlined, CodeOutlined} from "@ant-design/icons-vue"
+import {NodeExpandOutlined, ExceptionOutlined, CodeOutlined, SettingOutlined} from "@ant-design/icons-vue"
 
 const route = useRoute()
 const router = useRouter()
@@ -32,6 +32,12 @@ const menus = ref([
         icon: () => h(CodeOutlined),
         label: 'Templates',
         title: 'Templates',
+    },
+    {
+        key: 'setting',
+        icon: () => h(SettingOutlined),
+        label: 'Setting',
+        title: 'Setting',
     }
 ])
 </script>
@@ -47,8 +53,6 @@ const menus = ref([
                 :items="menus"
                 :style="{ lineHeight: '64px' }"
             >
-                <a-menu-item key="home">Hooks</a-menu-item>
-                <a-menu-item key="logs">Logs</a-menu-item>
             </a-menu>
         </a-layout-header>
         <a-layout-content>

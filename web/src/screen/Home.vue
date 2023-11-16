@@ -64,7 +64,8 @@ const uploadUrl = computed(() => {
 })
 
 const formatHookLink = (hook) => {
-    return `${location.protocol}//${location.host}/hook/${hook.id}`
+    const h = new URL(import.meta.env.VITE_API_URL || location.href)
+    return `${h.protocol}//${h.host}/hook/${hook.id}`
 }
 
 

@@ -91,6 +91,7 @@ defineExpose({open, close})
                     <a-select-option value="shell">Shell</a-select-option>
                     <a-select-option value="plaintext">Text</a-select-option>
                     <a-select-option value="xml">XML</a-select-option>
+                    <a-select-option value="html">HTML</a-select-option>
                 </a-select>
             </a-form-item>
             <a-form-item label="Template"></a-form-item>

@@ -58,11 +58,25 @@ const handleOpenCodePreview = (lang, code) => {
                         {{ action.attributes?.webhookName }}
                     </a-tag>
                 </template>
+
+                <template v-if="action.driver === 'email'">
+                    <span>{{ i + 1 }}.</span>
+                    <span class="flex">
+                        <span>Send mail to: </span>
+                        <span class="flex flex-col pad-lft">
+                            <span v-for="t in action.attributes?.to">{{t}}</span>
+                            <span v-if="action.attributes?.cc.length > 0" class="mgr-top">Cc: </span>
+                            <span v-if="action.attributes?.cc.length > 0" v-for="t in action.attributes?.cc">{{t}}</span>
+                        </span>
+                    </span>
+                </template>
             </a-space>
         </a-col>
     </a-row>
 </template>
 
 <style lang="less">
-
+    .action-preview {
+        align-items: start;
+    }
 </style>

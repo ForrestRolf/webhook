@@ -32,6 +32,7 @@ const (
 	ActionShellDriver      string = "shell"
 	ActionHttpDriver       string = "http"
 	ActionDispatcherDriver string = "dispatcher"
+	ActionEmailDriver      string = "email"
 )
 
 type ParameterNodeError struct {
@@ -262,6 +263,13 @@ type DispatcherAction struct {
 	WebhookName string            `bson:"webhookName,omitempty" bson:"webhookName"`
 	Url         string            `json:"url,omitempty" bson:"url"`
 	Method      string            `json:"method,omitempty" bson:"method"`
+}
+type EmailAction struct {
+	ProfileId string   `json:"profileId,omitempty" bson:"profileId"`
+	To        []string `json:"to,omitempty" bson:"to"`
+	Cc        []string `json:"cc,omitempty" bson:"cc"`
+	Subject   string   `json:"subject,omitempty" bson:"subject"`
+	Body      string   `json:"body,omitempty" bson:"body"`
 }
 
 type Hooks []Hook

@@ -93,6 +93,7 @@ onMounted(() => {
 
 <template>
     <a-row class="action-item">
+        <div class="type-label">Dispatcher</div>
         <a-col :span="24">
             <a-form :label-col="{ span: 5}" :disabled="props.disabled">
                 <a-form-item label="If">

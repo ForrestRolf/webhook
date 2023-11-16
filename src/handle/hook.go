@@ -18,6 +18,7 @@ import (
 type Hook struct {
 	MongoClient *mongo.Client
 	Model       *model.WebhookClient
+	EmailModel  *model.EmailClient
 	Response    *src.Response
 	Logger      *logrus.Logger
 	LogModel    *model.LogClient
@@ -152,6 +153,7 @@ func (h *Hook) HandleHook(c *gin.Context) {
 				}
 				shell := action.NewShellAction(&actionShell, &matchedHook, h.Model, actionLogger)
 				go shell.Exec(envs)
+
 			case hook.ActionHttpDriver:
 				var actionHttp hook.HttpAction
 				err := mapstructure.Decode(act.Attributes, &actionHttp)
@@ -162,6 +164,7 @@ func (h *Hook) HandleHook(c *gin.Context) {
 				}
 				h := action.NewHttpAction(&actionHttp, &matchedHook, h.Model, actionLogger)
 				go h.Send(args)
+
 			case hook.ActionDispatcherDriver:
 				var dispatcher hook.DispatcherAction
 				err := mapstructure.Decode(act.Attributes, &dispatcher)
@@ -172,6 +175,23 @@ func (h *Hook) HandleHook(c *gin.Context) {
 				}
 				d := action.NewDispatcherAction(&dispatcher, &matchedHook, req, actionLogger)
 				go d.Send(args)
+
+			case hook.ActionEmailDriver:
+				var email hook.EmailAction
+				err := mapstructure.Decode(act.Attributes, &email)
+				if err != nil {
+					m := fmt.Sprintf("Could not convert action to struct: %s", err.Error())
+					go hookLogger.AddErrorLog(m)
+					h.Logger.Error(m)
+				}
+				profile, err := h.EmailModel.GetProfile(email.ProfileId)
+				if err != nil {
+					go hookLogger.AddErrorLog(fmt.Sprintf("Could not found smtp profile [%s] %s", email.ProfileId, err.Error()))
+					return
+				}
+				e := action.NewEmailAction(&profile, &email, &matchedHook, h.EmailModel, actionLogger)
+				go e.Send(args)
+
 			default:
 				go hookLogger.AddWarnLog(fmt.Sprintf("unsupported action: %s", act.Driver))
 			}

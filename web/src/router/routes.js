@@ -2,6 +2,8 @@ import Home from "../screen/Home.vue"
 import Hook from "../screen/Hook.vue"
 import Logs from "../screen/Logs.vue"
 import Template from "../screen/Template.vue";
+import Email from "../screen/setting/Email.vue";
+import Setting from "../screen/Setting.vue";
 
 const routes = [
     {
@@ -35,6 +37,26 @@ const routes = [
         meta: {
             menuKey: "templates"
         }
+    },
+    {
+        name: "setting",
+        path: "/setting",
+        component: Setting,
+        meta: {
+            menuKey: "setting"
+        },
+        redirect: {name: "email-setting"},
+        children: [
+            {
+                name: "email-setting",
+                path: "email",
+                component: Email,
+                meta: {
+                    menuKey: "setting",
+                    subMenuKey: "email-setting"
+                }
+            }
+        ]
     }
 ]
 

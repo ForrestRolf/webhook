@@ -9,13 +9,13 @@ import {
     SlackOutlined,
     MailOutlined,
     WechatOutlined,
-    DingdingOutlined,
-    SolutionOutlined
+    DingdingOutlined
 } from "@ant-design/icons-vue"
 import ShellAction from "./ShellAction.vue";
 import HttpAction from "./HttpAction.vue";
 import CodeEditor from "../CodeEditor.vue";
 import Dispatcher from "./Dispatcher.vue";
+import EmailAction from "./EmailAction.vue";
 
 const emit = defineEmits(["update:actions"])
 const props = defineProps({
@@ -52,6 +52,7 @@ const components = {
     "shell": ShellAction,
     "http": HttpAction,
     "dispatcher": Dispatcher,
+    "email": EmailAction,
 }
 const handleRemove = (idx) => {
     actions.value.splice(idx, 1)
@@ -91,8 +92,18 @@ const addDispatcherAction = () => {
     emit("update:actions", actions.value)
 }
 
-const addLogOnlyAction = () => {
-
+const addEmailAction = () => {
+    actions.value.push({
+        "driver": "email",
+        "attributes": {
+            profileId: "",
+            to: [],
+            cc: [],
+            subject: "",
+            body: "",
+        }
+    })
+    emit("update:actions", actions.value)
 }
 
 const codeEditor = ref()
@@ -137,7 +148,7 @@ const handleCodeEditor = ({code, lang, onSave}) => {
                 <a-tooltip title="Slack (coming soon)">
                     <a-button type="text"><template #icon><SlackOutlined /></template></a-button>
                 </a-tooltip>
-                <a-tooltip title="Email (coming soon)">
+                <a-tooltip title="Email" @click="addEmailAction">
                     <a-button type="text"><template #icon><MailOutlined /></template></a-button>
                 </a-tooltip>
                 <a-tooltip title="Wechat (coming soon)">
