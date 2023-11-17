@@ -19,6 +19,7 @@ type Hook struct {
 	MongoClient *mongo.Client
 	Model       *model.WebhookClient
 	EmailModel  *model.EmailClient
+	SmsModel    *model.SmsClient
 	Response    *src.Response
 	Logger      *logrus.Logger
 	LogModel    *model.LogClient
@@ -200,6 +201,21 @@ func (h *Hook) HandleHook(c *gin.Context) {
 					return
 				}
 				s := action.NewSlackAction(&slack, &matchedHook, actionLogger)
+				go s.Send(args)
+
+			case hook.ActionSmsTwilioDriver, hook.ActionSmsBurstDriver, hook.ActionSmsPlivoDriver:
+				var sms hook.SmsAction
+				err := mapstructure.Decode(act.Attributes, &sms)
+				if err != nil {
+					go hookLogger.AddErrorLog(fmt.Sprintf("Could not convert action to struct: %s", err.Error()))
+					return
+				}
+				profile, err := h.SmsModel.GetProfile(sms.ProfileId)
+				if err != nil {
+					go hookLogger.AddErrorLog(fmt.Sprintf("Could not found sms profile [%s] %s", sms.ProfileId, err.Error()))
+					return
+				}
+				s := action.NewSmsAction(&sms, &profile, &matchedHook, actionLogger)
 				go s.Send(args)
 
 			default:

@@ -4,6 +4,7 @@ import Logs from "../screen/Logs.vue"
 import Template from "../screen/Template.vue";
 import Email from "../screen/setting/Email.vue";
 import Setting from "../screen/Setting.vue";
+import Sms from "../screen/setting/Sms.vue";
 
 const routes = [
     {
@@ -54,6 +55,15 @@ const routes = [
                 meta: {
                     menuKey: "setting",
                     subMenuKey: "email-setting"
+                }
+            },
+            {
+                name: "sms-setting",
+                path: "sms",
+                component: Sms,
+                meta: {
+                    menuKey: "setting",
+                    subMenuKey: "sms-setting"
                 }
             }
         ]

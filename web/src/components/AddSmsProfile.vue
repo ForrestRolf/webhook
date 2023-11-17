@@ -39,12 +39,10 @@ const requiredRule = [{required: true}]
 
 const formState = reactive({
     name: "",
-    host: "",
-    port: 465,
-    tls: true,
-    username: "",
-    password: "",
-    sender: "",
+    provider: "sms-twilio",
+    ak: "",
+    sk: "",
+    from: "",
 })
 const reset = () => {
     const defaultVal = {
@@ -83,12 +81,12 @@ const onSubmit = () => {
 
     let client
     if (isEditMode.value) {
-        client = httpPut(`/smtp/profile/${profileId.value}`)
+        client = httpPut(`/sms/profile/${profileId.value}`)
     } else {
-        client = httpPost(`/smtp/profile`)
+        client = httpPost(`/sms/profile`)
     }
     client.withBody(formState).exec().then(() => {
-        successMessage(`SMTP profile ${isEditMode.value ? "updated" : "created"}`).show()
+        successMessage(`SMS profile ${isEditMode.value ? "updated" : "created"}`).show()
         emit("saved")
         reset()
         close()
@@ -112,28 +110,24 @@ defineExpose({open, close})
               @close="onClose">
 
         <a-form :model="formState" :label-col="labelCol">
+            <a-form-item label="Provider">
+                <a-select v-model:value="formState.provider">
+                    <a-select-option value="sms-twilio">Twilio</a-select-option>
+                    <a-select-option value="sms-burst">Burst</a-select-option>
+                    <a-select-option value="sms-plivo">Plivo</a-select-option>
+                </a-select>
+            </a-form-item>
             <a-form-item label="Name" :rules="requiredRule">
                 <a-input v-model:value="formState.name"/>
             </a-form-item>
-            <a-form-item label="Host" :rules="requiredRule">
-                <a-input v-model:value="formState.host"/>
+            <a-form-item label="Access Key" :rules="requiredRule">
+                <a-input v-model:value="formState.ak"/>
             </a-form-item>
-            <a-form-item label="Port" :rules="requiredRule">
-                <a-input-number v-model:value="formState.port"/>
+            <a-form-item label="Secret Key" :rules="requiredRule">
+                <a-input v-model:value="formState.sk"/>
             </a-form-item>
-            <a-form-item label="TLS">
-                <a-switch v-model:checked="formState.tls">
-
-                </a-switch>
-            </a-form-item>
-            <a-form-item label="Username" :rules="requiredRule">
-                <a-input v-model:value="formState.username"/>
-            </a-form-item>
-            <a-form-item label="Password" :rules="requiredRule">
-                <a-input v-model:value="formState.password"/>
-            </a-form-item>
-            <a-form-item label="Sender" help="If left blank, username is used as sender">
-                <a-input v-model:value="formState.sender"/>
+            <a-form-item label="From">
+                <a-input v-model:value="formState.from"/>
             </a-form-item>
             <a-form-item label="" :wrapper-col="{ span: 14, offset: 4 }">
                 <a-space>

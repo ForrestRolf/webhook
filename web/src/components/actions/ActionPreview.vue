@@ -40,13 +40,13 @@ const handleOpenCodePreview = (lang, code) => {
                         </template>
                     </a-button>
                 </template>
-                <template v-if="action.driver === 'http'">
+                <template v-else-if="action.driver === 'http'">
                     <span>{{ i + 1 }}.</span>
                     <a-tag color="blue">{{ action.attributes?.method }}</a-tag>
                     <span>{{ action.attributes?.url }}</span>
                 </template>
 
-                <template v-if="action.driver === 'dispatcher'">
+                <template v-else-if="action.driver === 'dispatcher'">
                     <span>{{ i + 1 }}.</span>
                     <span v-if="Object.keys(action.attributes?.if).length > 0">If </span>
                     <a-tag v-if="Object.keys(action.attributes?.if).length > 0">
@@ -59,7 +59,7 @@ const handleOpenCodePreview = (lang, code) => {
                     </a-tag>
                 </template>
 
-                <template v-if="action.driver === 'email'">
+                <template v-else-if="action.driver === 'email'">
                     <span>{{ i + 1 }}.</span>
                     <span class="flex">
                         <span>Send mail to: </span>
@@ -71,9 +71,14 @@ const handleOpenCodePreview = (lang, code) => {
                     </span>
                 </template>
 
-                <template v-if="action.driver === 'slack'">
+                <template v-else-if="action.driver === 'slack'">
                     <span>{{ i + 1 }}.</span>
                     <span>Send to slack: <a-tag>{{ $filters.slackChannel(action.attributes?.channel) }}</a-tag></span>
+                </template>
+
+                <template v-else-if="action.driver.startsWith('sms-')">
+                    <span>{{ i + 1 }}.</span>
+                    <span>Send SMS using <a-tag>{{ $filters.smsProvider(action.attributes?.provider) }}</a-tag></span>
                 </template>
             </a-space>
         </a-col>

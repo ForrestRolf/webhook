@@ -34,6 +34,9 @@ const (
 	ActionDispatcherDriver string = "dispatcher"
 	ActionEmailDriver      string = "email"
 	ActionSlackDriver      string = "slack"
+	ActionSmsTwilioDriver  string = "sms-twilio"
+	ActionSmsBurstDriver   string = "sms-burst"
+	ActionSmsPlivoDriver   string = "sms-plivo"
 )
 
 type ParameterNodeError struct {
@@ -276,6 +279,12 @@ type SlackAction struct {
 	WebhookUrl string `json:"webhookUrl,omitempty" bson:"webhookUrl"`
 	Message    string `json:"message,omitempty" bson:"message"`
 	Channel    string `json:"channel,omitempty" bson:"channel"`
+}
+type SmsAction struct {
+	Provider  string `json:"provider,omitempty" bson:"provider"`
+	ProfileId string `json:"profileId,omitempty" bson:"profileId"`
+	To        string `json:"to,omitempty" bson:"to"`
+	Content   string `json:"content,omitempty" bson:"content"`
 }
 
 type Hooks []Hook

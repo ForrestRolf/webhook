@@ -9,7 +9,8 @@ import {
     SlackOutlined,
     MailOutlined,
     WechatOutlined,
-    DingdingOutlined
+    DingdingOutlined,
+    CommentOutlined
 } from "@ant-design/icons-vue"
 import ShellAction from "./ShellAction.vue";
 import HttpAction from "./HttpAction.vue";
@@ -17,6 +18,7 @@ import CodeEditor from "../CodeEditor.vue";
 import Dispatcher from "./Dispatcher.vue";
 import EmailAction from "./EmailAction.vue";
 import SlackAction from "./SlackAction.vue";
+import SmsAction from "./SmsAction.vue";
 
 const emit = defineEmits(["update:actions"])
 const props = defineProps({
@@ -55,6 +57,9 @@ const components = {
     "dispatcher": Dispatcher,
     "email": EmailAction,
     "slack": SlackAction,
+    "sms-twilio": SmsAction,
+    "sms-plivo": SmsAction,
+    "sms-burst": SmsAction,
 }
 const handleRemove = (idx) => {
     actions.value.splice(idx, 1)
@@ -119,6 +124,19 @@ const addSlackAction = () => {
     emit("update:actions", actions.value)
 }
 
+const handleSmsAction = (act) => {
+    actions.value.push({
+        "driver": act.key,
+        "attributes": {
+            profileId: "",
+            provider: act.key,
+            to: "",
+            content: "",
+        }
+    })
+    emit("update:actions", actions.value)
+}
+
 const codeEditor = ref()
 const onCodeSave = ref()
 const handleCodeEditor = ({code, lang, onSave}) => {
@@ -163,6 +181,24 @@ const handleCodeEditor = ({code, lang, onSave}) => {
                 </a-tooltip>
                 <a-tooltip title="Email" @click="addEmailAction">
                     <a-button type="text"><template #icon><MailOutlined /></template></a-button>
+                </a-tooltip>
+                <a-tooltip title="SMS">
+                    <a-dropdown>
+                        <template #overlay>
+                            <a-menu @click="handleSmsAction">
+                                <a-menu-item key="sms-twilio">
+                                    Twilio
+                                </a-menu-item>
+                                <a-menu-item key="sms-burst">
+                                    Burst SMS
+                                </a-menu-item>
+                                <a-menu-item key="sms-plivo">
+                                    Plivo
+                                </a-menu-item>
+                            </a-menu>
+                        </template>
+                        <CommentOutlined />
+                    </a-dropdown>
                 </a-tooltip>
                 <a-tooltip title="Wechat (coming soon)">
                     <a-button type="text"><template #icon><WechatOutlined /></template></a-button>

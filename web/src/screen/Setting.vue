@@ -1,6 +1,6 @@
 <script setup>
 import {computed, h, ref} from "vue";
-import {MailOutlined} from "@ant-design/icons-vue";
+import {MailOutlined, CommentOutlined} from "@ant-design/icons-vue";
 import {useRoute, useRouter} from "vue-router";
 
 const route = useRoute()
@@ -17,8 +17,14 @@ const menus = ref([
     {
         key: 'email-setting',
         icon: () => h(MailOutlined),
-        label: 'Email',
-        title: 'Email',
+        label: 'Email profile',
+        title: 'Email profile',
+    },
+    {
+        key: 'sms-setting',
+        icon: () => h(CommentOutlined),
+        label: 'SMS profile',
+        title: 'SMS profile',
     },
 ])
 </script>

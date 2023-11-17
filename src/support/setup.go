@@ -40,6 +40,7 @@ func Setup(router *gin.Engine, args *Arguments) *gin.RouterGroup {
 	logsClient := model.NewLogClient(mongoClient, args.Database)
 	templateClient := model.NewTemplateClient(mongoClient, args.Database)
 	emailClient := model.NewEmailClient(mongoClient, args.Database)
+	smsClient := model.NewSmsClient(mongoClient, args.Database)
 
 	w := handle.Webhook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger}
 
@@ -73,7 +74,14 @@ func Setup(router *gin.Engine, args *Arguments) *gin.RouterGroup {
 	r.DELETE("/smtp/profile/:id", p.Delete)
 	r.GET("/smtp/profile/:id", p.Detail)
 
-	h := handle.Hook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger, LogModel: logsClient, EmailModel: emailClient}
+	sms := handle.SmsProfile{MongoClient: mongoClient, Model: smsClient, Response: response, Logger: logger}
+	r.GET("/sms/profile", sms.Query)
+	r.POST("/sms/profile", sms.Store)
+	r.PUT("/sms/profile/:id", sms.Update)
+	r.DELETE("/sms/profile/:id", sms.Delete)
+	r.GET("/sms/profile/:id", sms.Detail)
+
+	h := handle.Hook{MongoClient: mongoClient, Model: webhookClient, Response: response, Logger: logger, LogModel: logsClient, EmailModel: emailClient, SmsModel: smsClient}
 	router.Any("/hook/:id", h.HandleHook)
 
 	l := handle.Log{MongoClient: mongoClient, Model: logsClient, Response: response}
