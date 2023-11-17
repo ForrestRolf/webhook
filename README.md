@@ -8,12 +8,14 @@ For example, if you are using Harbor, you can use webhook to configure a hook se
 
 * Beautiful management UI
 * Supports multiple data formats: JSON, XML, Form
-* Supports multiple actions: Shell, http
+* Supports multiple actions: Shell, http，email，slack，SMS
 * Hook supports authentication
 * Detailed execution logs
 * Debug mode
 * Backup / Restore hooks
 * Script templates
+
+> NOTE: SMS is not yet tested
 
 # Dependencies
 * MongoDB
@@ -33,6 +35,13 @@ Open http://localhost:9000 in your browser.
 ```
 
 # Using Variables
+
+## Variables Scope
+
+* Shell
+* Http payload
+* Email subject and body
+* Slack message
 
 ## Using variables in shell
 
