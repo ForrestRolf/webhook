@@ -203,7 +203,7 @@ func (h *Hook) HandleHook(c *gin.Context) {
 				s := action.NewSlackAction(&slack, &matchedHook, actionLogger)
 				go s.Send(args)
 
-			case hook.ActionSmsTwilioDriver, hook.ActionSmsBurstDriver, hook.ActionSmsPlivoDriver:
+			case hook.ActionSmsTwilioDriver, hook.ActionSmsBurstDriver, hook.ActionSmsPlivoDriver, hook.ActionSmsSNSDriver:
 				var sms hook.SmsAction
 				err := mapstructure.Decode(act.Attributes, &sms)
 				if err != nil {

@@ -21,6 +21,7 @@ type SmsProfile struct {
 	AK       string             `json:"ak,omitempty" bson:"ak"`
 	SK       string             `json:"sk,omitempty" bson:"sk"`
 	From     string             `json:"from,omitempty" bson:"from"`
+	Region   string             `json:"region,omitempty" bson:"region"`
 }
 
 func NewSmsClient(client *mongo.Client, db string) *SmsClient {
@@ -85,6 +86,7 @@ func (sms *SmsClient) UpdateProfile(id string, profile SmsProfile) (int, error) 
 			{"sk", profile.SK},
 			{"from", profile.From},
 			{"name", profile.Name},
+			{"region", profile.Region},
 		},
 	}})
 	if err != nil {

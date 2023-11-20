@@ -76,6 +76,9 @@ onMounted(() => {
                 <a-form-item label="Message">
                     <a-textarea :rows="6" v-model:value="attributes.content"></a-textarea>
                 </a-form-item>
+                <a-form-item label="Topic ARN" v-show="attributes.provider === 'sms-sns'">
+                    <a-input v-model:value="attributes.topicArn"></a-input>
+                </a-form-item>
             </a-form>
         </a-col>
     </a-row>

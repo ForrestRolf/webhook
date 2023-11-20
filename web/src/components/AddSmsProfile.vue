@@ -43,6 +43,7 @@ const formState = reactive({
     ak: "",
     sk: "",
     from: "",
+    region: "",
 })
 const reset = () => {
     const defaultVal = {
@@ -115,6 +116,7 @@ defineExpose({open, close})
                     <a-select-option value="sms-twilio">Twilio</a-select-option>
                     <a-select-option value="sms-burst">Burst</a-select-option>
                     <a-select-option value="sms-plivo">Plivo</a-select-option>
+                    <a-select-option value="sms-sns">SNS</a-select-option>
                 </a-select>
             </a-form-item>
             <a-form-item label="Name" :rules="requiredRule">
@@ -128,6 +130,9 @@ defineExpose({open, close})
             </a-form-item>
             <a-form-item label="From">
                 <a-input v-model:value="formState.from"/>
+            </a-form-item>
+            <a-form-item label="Region">
+                <a-input v-model:value="formState.region"/>
             </a-form-item>
             <a-form-item label="" :wrapper-col="{ span: 14, offset: 4 }">
                 <a-space>

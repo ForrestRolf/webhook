@@ -37,6 +37,7 @@ const (
 	ActionSmsTwilioDriver  string = "sms-twilio"
 	ActionSmsBurstDriver   string = "sms-burst"
 	ActionSmsPlivoDriver   string = "sms-plivo"
+	ActionSmsSNSDriver     string = "sms-sns"
 )
 
 type ParameterNodeError struct {
@@ -285,6 +286,7 @@ type SmsAction struct {
 	ProfileId string `json:"profileId,omitempty" bson:"profileId"`
 	To        string `json:"to,omitempty" bson:"to"`
 	Content   string `json:"content,omitempty" bson:"content"`
+	TopicArn  string `json:"topicArn,omitempty" bson:"topicArn"`
 }
 
 type Hooks []Hook

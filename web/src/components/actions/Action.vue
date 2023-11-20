@@ -60,6 +60,7 @@ const components = {
     "sms-twilio": SmsAction,
     "sms-plivo": SmsAction,
     "sms-burst": SmsAction,
+    "sms-sns": SmsAction,
 }
 const handleRemove = (idx) => {
     actions.value.splice(idx, 1)
@@ -194,6 +195,9 @@ const handleCodeEditor = ({code, lang, onSave}) => {
                                 </a-menu-item>
                                 <a-menu-item key="sms-plivo">
                                     Plivo
+                                </a-menu-item>
+                                <a-menu-item key="sms-sns">
+                                    SNS
                                 </a-menu-item>
                             </a-menu>
                         </template>

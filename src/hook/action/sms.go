@@ -2,9 +2,13 @@ package action
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"io"
 	"net/http"
 	"strconv"
@@ -52,6 +56,8 @@ func (sms *Sms) Send(args map[string]string) {
 		sms.SendBurstSms()
 	case hook.ActionSmsPlivoDriver:
 		sms.SendPlivoSms()
+	case hook.ActionSmsSNSDriver:
+		sms.sendSNS()
 	default:
 		sms.LogModel.AddWarnLog(fmt.Sprintf("Unsupported sms provider: %s", sms.Profile.Provider))
 	}
@@ -126,5 +132,38 @@ func (sms *Sms) request(url string, message map[string]string, auth string) {
 			sms.LogModel.AddErrorLog(err.Error())
 		}
 		sms.LogModel.AddDebugLog(fmt.Sprintf("Response body: %s", response))
+	}
+}
+
+type SNSPublishAPI interface {
+	Publish(ctx context.Context,
+		params *sns.PublishInput,
+		optFns ...func(*sns.Options)) (*sns.PublishOutput, error)
+}
+
+func PublishSNSMessage(c context.Context, api SNSPublishAPI, input *sns.PublishInput) (*sns.PublishOutput, error) {
+	return api.Publish(c, input)
+}
+func (sms *Sms) sendSNS() {
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(sms.Profile.AK, sms.Profile.SK, "")), config.WithRegion(sms.Profile.Region))
+	if err != nil {
+		sms.LogModel.AddErrorLog(err.Error())
+		return
+	}
+
+	client := sns.NewFromConfig(cfg)
+	input := &sns.PublishInput{
+		Message:  &sms.Message,
+		TopicArn: &sms.Action.TopicArn,
+	}
+
+	result, err := PublishSNSMessage(context.TODO(), client, input)
+	if err != nil {
+		sms.LogModel.AddErrorLog(err.Error())
+		return
+	}
+
+	if sms.Hook.Debug {
+		sms.LogModel.AddDebugLog(fmt.Sprintf("Message ID: %s, Sequence Number: %s", result.MessageId, result.SequenceNumber))
 	}
 }
