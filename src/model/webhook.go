@@ -31,6 +31,7 @@ type Webhook struct {
 	AuthToken             string             `json:"authToken,omitempty" bson:"authToken,omitempty"`
 	Debug                 bool               `json:"debug,omitempty" bson:"debug"`
 	SaveRequest           []string           `json:"saveRequest,omitempty" bson:"saveRequest"`
+	Updated               primitive.DateTime `json:"updated,omitempty" bson:"updated"`
 }
 
 type WebhookClient struct {
@@ -56,9 +57,18 @@ func (c *WebhookClient) AddWebhook(webhook *Webhook) error {
 	return nil
 }
 
-func (c *WebhookClient) ListWebhooks() ([]Webhook, error) {
+func (c *WebhookClient) ListWebhooks(orderBy string) ([]Webhook, error) {
+	availableOrderFields := make(map[string]string)
+	availableOrderFields["create"] = "_id"
+	availableOrderFields["lastRun"] = "lastRunAt"
+	availableOrderFields["update"] = "updated"
+	field := "_id"
+	if v, ok := availableOrderFields[orderBy]; ok {
+		field = v
+	}
+
 	webhooks := make([]Webhook, 0)
-	opts := options.Find().SetSort(bson.D{{"_id", -1}})
+	opts := options.Find().SetSort(bson.D{{field, -1}})
 	cur, err := c.webhookCollection.Find(context.TODO(), bson.M{}, opts)
 	if err != nil {
 		return nil, err
@@ -97,6 +107,7 @@ func (c *WebhookClient) UpdateWebhook(id string, webhook Webhook) (int, error) {
 			{"authToken", webhook.AuthToken},
 			{"saveRequest", webhook.SaveRequest},
 			{"debug", webhook.Debug},
+			{"updated", primitive.NewDateTimeFromTime(time.Now())},
 		},
 	}})
 	if err != nil {

@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, ref} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {
     PlusOutlined,
     EditOutlined,
@@ -8,7 +8,8 @@ import {
     CheckOutlined,
     CloudDownloadOutlined,
     CloudUploadOutlined,
-    SyncOutlined
+    SyncOutlined,
+    SortAscendingOutlined
 } from '@ant-design/icons-vue';
 import {useRouter} from "vue-router";
 import useAxios from "../support/axios.js";
@@ -34,13 +35,17 @@ const logs = ref()
 const loading = ref(true)
 const keyword = ref(null)
 const codeEditor = ref()
+const orderBy = ref("lastRun")
 
 const gotoHook = () => {
     router.push({name: "hooks"})
 }
 const fetchWebhooks = () => {
     loading.value = true
-    httpGet("/webhook").exec().then(({payload}) => {
+    let query = {
+        orderBy: orderBy.value
+    }
+    httpGet("/webhook").withQuery(query).exec().then(({payload}) => {
         hooks.value = payload
     }).catch(e => {
 
@@ -112,6 +117,9 @@ const onCodePreview = ({lang, code}) => {
     codeEditor.value.open(lang, code)
 }
 
+watch(orderBy, () => {
+    fetchWebhooks()
+})
 onMounted(() => {
     setTimeout(fetchWebhooks, 100)
 })
@@ -121,11 +129,19 @@ onMounted(() => {
     <div class="home">
         <a-row class="new-hook">
             <a-col :span="12">
-                <a-input-search
-                    class="webhook-search"
-                    v-model:value="keyword"
-                    placeholder="Enter keywords to start searching"
-                />
+                <a-space>
+                    <a-input-search
+                        class="webhook-search"
+                        v-model:value="keyword"
+                        placeholder="Enter keywords to start searching"
+                    />
+                    <a-radio-group v-model:value="orderBy" button-style="solid">
+                        <a-radio-button value="" disabled color="white">Order by:</a-radio-button>
+                        <a-radio-button value="create">Create date</a-radio-button>
+                        <a-radio-button value="update">Update date</a-radio-button>
+                        <a-radio-button value="lastRun">Last run</a-radio-button>
+                    </a-radio-group>
+                </a-space>
             </a-col>
             <a-col :span="12" class="txt-rgt">
                 <a-space>

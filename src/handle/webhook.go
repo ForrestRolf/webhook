@@ -19,7 +19,8 @@ type Webhook struct {
 }
 
 func (w *Webhook) Query(c *gin.Context) {
-	webhooks, err := w.Model.ListWebhooks()
+	orderBy := c.Query("orderBy")
+	webhooks, err := w.Model.ListWebhooks(orderBy)
 	if err != nil {
 		w.Response.Fail(c, err.Error(), nil)
 		return
