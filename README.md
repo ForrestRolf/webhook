@@ -8,7 +8,7 @@ For example, if you are using Harbor, you can use webhook to configure a hook se
 
 * Beautiful management UI
 * Supports multiple data formats: JSON, XML, Form
-* Supports multiple actions: Shell, http，email，slack，SMS
+* Supports multiple actions: Shell, HTTP，Email，Slack，SMS，SNS
 * Hook supports authentication
 * Detailed execution logs
 * Debug mode
@@ -42,6 +42,7 @@ Open http://localhost:9000 in your browser.
 * Http payload
 * Email subject and body
 * Slack message
+* SMS message
 
 ## Using variables in shell
 
@@ -57,7 +58,7 @@ For example, in a http action, configure the payload as follows:
 
 ```json
 {
-	"Var": "${foo}"
+  "Var": "${foo}"
 }
 ```
 
