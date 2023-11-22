@@ -50,7 +50,7 @@ const handleOpenCodePreview = (lang, code) => {
                     <span>{{ i + 1 }}.</span>
                     <span v-if="Object.keys(action.attributes?.if).length > 0">If </span>
                     <a-tag v-if="Object.keys(action.attributes?.if).length > 0">
-                        {{ Object.keys(action.attributes?.if).pop() }} = {{ Object.values(action.attributes?.if).pop() }}
+                        {{ Object.keys(action.attributes?.if).pop() }} {{ $filters.compareSymbol(action.attributes?.compare) }} {{ Object.values(action.attributes?.if).pop() }}
                     </a-tag>
                     <span v-if="Object.keys(action.attributes?.if).length === 0">Always</span>
                     <span>re-send to</span>

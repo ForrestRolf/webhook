@@ -94,7 +94,8 @@ const addDispatcherAction = () => {
             "url": "",
             "method": "POST",
             "webhookId": "",
-            "webhookName": ""
+            "webhookName": "",
+            "compare": "eq",
         }
     })
     emit("update:actions", actions.value)

@@ -104,7 +104,12 @@ onMounted(() => {
                                 {{ arg.name }}
                             </a-select-option>
                         </a-select>
-                        <span v-if="ifArgument.name">=</span>
+                        <span v-if="ifArgument.name">
+                            <a-radio-group v-model:value="attributes.compare" button-style="solid" size="small">
+                                <a-radio-button value="eq">=</a-radio-button>
+                                <a-radio-button value="neq">!=</a-radio-button>
+                            </a-radio-group>
+                        </span>
                         <a-input v-if="ifArgument.name" v-model:value="ifArgument.value"></a-input>
                     </a-space>
                 </a-form-item>

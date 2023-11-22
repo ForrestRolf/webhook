@@ -268,6 +268,7 @@ type DispatcherAction struct {
 	WebhookName string            `bson:"webhookName,omitempty" bson:"webhookName"`
 	Url         string            `json:"url,omitempty" bson:"url"`
 	Method      string            `json:"method,omitempty" bson:"method"`
+	Compare     string            `json:"compare,omitempty" bson:"compare"`
 }
 type EmailAction struct {
 	ProfileId string   `json:"profileId,omitempty" bson:"profileId"`

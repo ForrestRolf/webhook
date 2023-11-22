@@ -38,7 +38,14 @@ func (d *Dispatcher) Send(args map[string]string) {
 	ok := true
 	for k, v := range d.Action.If {
 		if val, o := args[k]; o {
-			ok = d.compare(v, val)
+			switch d.Action.Compare {
+			case "eq":
+				ok = d.compare(v, val)
+			case "neq":
+				ok = !d.compare(v, val)
+			default:
+				ok = d.compare(v, val)
+			}
 			if !ok {
 				break
 			}
@@ -50,7 +57,7 @@ func (d *Dispatcher) Send(args map[string]string) {
 	if !ok {
 		return
 	}
-	d.LogModel.AddInfoLog(fmt.Sprintf("Send to %s, method: %s", d.Action.Url, d.Action.Method))
+	d.LogModel.AddInfoLog(fmt.Sprintf("Send to %s (%s), method: %s", d.Action.WebhookName, d.Action.Url, d.Action.Method))
 	d.LogModel.AddDebugLog("Send body: " + string(d.Request.Body))
 
 	bodyReader := bytes.NewReader(d.Request.Body)
